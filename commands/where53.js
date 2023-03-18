@@ -11,7 +11,7 @@ module.exports = {
 
         try {
             // const port = await axios("https://mhp.inboost.ai:5053/api/who");
-            const response = await axios.get("https://mhp.inboost.ai:5053/api/who", {
+            const response = await axios.get("http://localhost:5050/api/who", {
                 headers: {
                     Authorization: `bearer ${inboostToken}`,
                 },
