@@ -16,6 +16,7 @@ module.exports = {
             const Prompt = interaction.options._hoistedOptions?.[0]?.value;
 
             // await interaction.reply("Loading...");
+            await interaction.deferReply();
 
             const response = await axios.post(
                 "https://8720-157-90-210-118.eu.ngrok.io/GPT",
@@ -37,6 +38,8 @@ module.exports = {
         }
         // await interaction.deferReply(answer);
         // await interaction.reply(answer);
-        await interaction.reply({ content: answer, fetchReply: true });
+        // await interaction.reply({ content: answer, fetchReply: true });
+        // await interaction.followUp(answer);
+        await interaction.editReply(answer);
     },
 };
