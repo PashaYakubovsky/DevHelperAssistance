@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 const axios = require("axios");
-const { inboostToken } = require("../config.json");
+const { inboostToken, secretMaxTokens } = require("../config.json");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -8,12 +8,14 @@ module.exports = {
         .setDescription("Ask the ChatGPT.")
         .addStringOption(option =>
             option.setName("prompt").setDescription("text for gpt model").setRequired(true)
-        ),
+        )
+        .addStringOption(option => option.setName("AImax")),
     async execute(interaction) {
         let answer = "error when trying to get the answer";
 
         try {
             const Prompt = interaction.options._hoistedOptions?.[0]?.value;
+            const passForAIMaxOption = interaction.options._hoistedOptions?.[1]?.value;
 
             // await interaction.reply("Loading...");
             await interaction.deferReply();
@@ -22,6 +24,7 @@ module.exports = {
                 "https://8720-157-90-210-118.eu.ngrok.io/GPT",
                 {
                     Prompt,
+                    MaxTokens: passForAIMaxOption === secretMaxTokens ? 4000 : 100,
                 },
                 {
                     headers: {
