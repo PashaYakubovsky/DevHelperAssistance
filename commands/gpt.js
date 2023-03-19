@@ -2,6 +2,12 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const axios = require("axios");
 const { inboostToken, secretMaxTokens, secretView } = require("../config.json");
 
+if (!String.prototype.trim) {
+    String.prototype.trim = function () {
+        return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
+    };
+}
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("gpt")
