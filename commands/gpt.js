@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const axios = require("axios");
 const { inboostToken, secretMaxTokens } = require("../config.json");
 
@@ -25,22 +25,18 @@ module.exports = {
             // await interaction.reply("Loading...");
             await interaction.deferReply();
 
-            const response = await axios.post(
-                "https://8720-157-90-210-118.eu.ngrok.io/GPT",
-                {
-                    Prompt,
-                    MaxTokens: passForAIMaxOption === secretMaxTokens ? 4000 : 100,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${inboostToken}`,
-                    },
-                }
-            );
+            const body = {
+                Prompt,
+                MaxTokens: passForAIMaxOption === secretMaxTokens ? 4000 : 100,
+            };
 
-            answer = Array.isArray(response.data)
-                ? response.data.reduce((acc, cur) => acc + "\n" + cur.text, "")
-                : response.data.text;
+            const response = await axios.post("https://8720-157-90-210-118.eu.ngrok.io/GPT", body, {
+                headers: {
+                    Authorization: `Bearer ${inboostToken}`,
+                },
+            });
+
+            answer = String(response.data?.message?.content ?? "something wrong");
         } catch (err) {
             console.error(err);
         }
@@ -48,6 +44,36 @@ module.exports = {
         // await interaction.reply(answer);
         // await interaction.reply({ content: answer, fetchReply: true });
         // await interaction.followUp(answer);
-        await interaction.editReply(answer);
+
+        const embed = new EmbedBuilder()
+            .setColor("Random")
+            .setTitle("OpenAI")
+            .setURL("https://platform.openai.com/docs/introduction/overview")
+            .setAuthor({
+                name: "Pasha Yakubovsky",
+            })
+            .setImage("https://i.pinimg.com/564x/a3/2e/c0/a32ec0f7090323b08e74abd035dcff86.jpg")
+            .setDescription(`Text from OpenAI API, model=GPT3.5-turbo`)
+            .addFields(splitTextIntoChunks(answer))
+            .setTimestamp();
+
+        await interaction.editReply({ embeds: [embed] });
     },
 };
+
+function splitTextIntoChunks(text) {
+    const chunks = [];
+    const maxLength = 1024;
+
+    for (let i = 0; i < text.length; i += maxLength) {
+        const chunk = text.substring(i, i + maxLength);
+        const chunkIndex = Math.floor(i / maxLength);
+        const chunkObject = {
+            name: text.length > 1 ? `part ${chunkIndex + 1}` : "answer",
+            value: chunk,
+        };
+        chunks.push(chunkObject);
+    }
+
+    return chunks;
+}
