@@ -9,7 +9,12 @@ module.exports = {
         .addStringOption(option =>
             option.setName("prompt").setDescription("text for gpt model").setRequired(true)
         )
-        .addStringOption(option => option.setName("AImax")),
+        .addStringOption(option =>
+            option
+                .setName("aimax")
+                .setDescription("secret for max tokens in output")
+                .setRequired(false)
+        ),
     async execute(interaction) {
         let answer = "error when trying to get the answer";
 
