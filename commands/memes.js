@@ -18,8 +18,12 @@ module.exports = {
                 .setRequired(false)
         ),
     async execute(interaction) {
-        const subredditName = interaction.options.data?.[0]?.value ?? "ProgrammerHumor";
-        const limit = Number(interaction.options.data?.[1]?.value ?? 10);
+        const subredditName =
+            interaction.options.data?.find(option => option?.name === "subreddit")?.value ??
+            "ProgrammerHumor";
+        const limit = Number(
+            interaction.options.data?.find(option => option?.name === "limit")?.value ?? 10
+        );
 
         await interaction.deferReply();
 
