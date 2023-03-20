@@ -56,6 +56,8 @@ module.exports = {
             console.log(err);
         }
 
+        console.log({ textToModel: Prompt, textFromMode: answer });
+
         if (!showDir) {
             const embed = new EmbedBuilder()
                 .setTitle("OpenAI")
