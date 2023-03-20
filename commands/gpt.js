@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const axios = require("axios");
-const { inboostToken, secretMaxTokens, secretView } = require("../config.json");
+const { inboostToken, secretView } = require("../config.json");
 
 if (!String.prototype.trim) {
     String.prototype.trim = function () {
@@ -20,7 +20,7 @@ module.exports = {
         ),
     async execute(interaction) {
         let answer = "error when trying to get the answer";
-        let secret = secretView;
+        let showDir = false;
         const Prompt = interaction.options._hoistedOptions?.[0]?.value;
         let MaxTokens = interaction.options._hoistedOptions?.[1]?.value;
 
@@ -30,7 +30,7 @@ module.exports = {
 
             const body = {
                 Prompt,
-                MaxTokens: typeof MaxTokens == "string" ? parseInt(MaxTokens) : 100,
+                MaxTokens: typeof MaxTokens == "string" ? parseInt(MaxTokens ?? 100) : 100,
             };
 
             const response = await axios.post("https://8720-157-90-210-118.eu.ngrok.io/GPT", body, {
@@ -46,28 +46,24 @@ module.exports = {
 
         try {
             const _secret = MaxTokens?.split(",")?.[1];
-            if (_secret.trim() === secret) {
+
+            if (_secret?.trim() === secretView) {
                 // change view type ai bot answers
                 MaxTokens = String(parseInt(MaxTokens));
-                secret = null;
+                showDir = true;
             }
         } catch (err) {
             console.log(err);
         }
 
-        if (secret !== null) {
+        if (!showDir) {
             const embed = new EmbedBuilder()
                 .setTitle("OpenAI")
                 .setURL("https://platform.openai.com/docs/introduction/overview")
-                .setImage("https://i.pinimg.com/564x/23/a6/76/23a67601c17f4606250e6b15d2592c12.jpg")
-                .addFields(splitTextIntoChunks(answer))
-                .setFields({
-                    name: "info",
-                    value: `Text from OpenAI API, model=GPT3.5-turbo`,
-                })
-                .setFooter({
-                    text: "Pasha Yakubovsky",
-                });
+                .setThumbnail(
+                    "https://i.pinimg.com/564x/23/a6/76/23a67601c17f4606250e6b15d2592c12.jpg"
+                )
+                .addFields(splitTextIntoChunks(answer));
 
             await interaction.editReply({ embeds: [embed] });
         } else {
@@ -79,15 +75,33 @@ module.exports = {
 function splitTextIntoChunks(text) {
     const chunks = [];
     const maxLength = 1024;
+    const length = text.length;
+    let stepEmoji = "ノ( º  ºノ)";
 
-    for (let i = 0; i < text.length; i += maxLength) {
-        const chunk = text.substring(i, i + maxLength);
-        const chunkObject = {
-            name: i % 2 === 0 ? "_ /( º  ºノ)" : "┬─┬ノ( º _ ºノ)",
-            value: chunk,
-        };
-        chunks.push(chunkObject);
+    if (length > maxLength) {
+        for (let i = 0; i < length; i += maxLength) {
+            const chunk = text.substring(i, i + maxLength);
+
+            const chunkObject = {
+                name: stepEmoji,
+                value: chunk,
+            };
+
+            stepEmoji = "┬─┬" + stepEmoji;
+
+            chunks.push(chunkObject);
+        }
+    } else {
+        chunks.push({
+            name: "┬─┬ノ( º _ ºノ)",
+            value: text,
+        });
     }
+
+    chunks.push({
+        name: "info",
+        value: `Text from OpenAI API, model=GPT3.5-turbo`,
+    });
 
     return chunks;
 }
