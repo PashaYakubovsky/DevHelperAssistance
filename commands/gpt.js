@@ -76,7 +76,7 @@ function splitTextIntoChunks(text) {
     const chunks = [];
     const maxLength = 1024;
     const length = text.length;
-    let stepEmoji = "ノ( º  ºノ)";
+    let stepEmoji = "ノ( º _ ºノ)";
 
     if (length > maxLength) {
         for (let i = 0; i < length; i += maxLength) {
