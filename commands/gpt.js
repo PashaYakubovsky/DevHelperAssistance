@@ -82,9 +82,9 @@ module.exports = {
     },
 };
 
-function splitTextIntoChunks(text, maxLength) {
+function splitTextIntoChunks(text, _maxLength) {
     const chunks = [];
-    const maxLength = maxLength ?? 1024;
+    const maxLength = _maxLength ?? 1024;
     const length = text.length;
     let stepEmoji = "ノ( º _ ºノ)";
 
