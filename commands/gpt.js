@@ -69,14 +69,22 @@ module.exports = {
 
             await interaction.editReply({ embeds: [embed] });
         } else {
-            await interaction.editReply(answer);
+            if (answer.length > 4000) {
+                const chunks = splitTextIntoChunks(answer, 4000);
+
+                for (const chunk of chunks) {
+                    await interaction.editReply(chunk.value);
+                }
+            } else {
+                await interaction.editReply(answer);
+            }
         }
     },
 };
 
-function splitTextIntoChunks(text) {
+function splitTextIntoChunks(text, maxLength) {
     const chunks = [];
-    const maxLength = 1024;
+    const maxLength = maxLength ?? 1024;
     const length = text.length;
     let stepEmoji = "ノ( º _ ºノ)";
 
