@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const axios = require("axios");
-const { inboostToken, secretView } = require("../config.json");
+const { inboostToken, secretView } = require("../../config.json");
 
 if (!String.prototype.trim) {
     String.prototype.trim = function () {
@@ -25,26 +25,6 @@ module.exports = {
         let MaxTokens = interaction.options._hoistedOptions?.[1]?.value;
 
         try {
-            // await interaction.reply("Loading...");
-            await interaction.deferReply();
-
-            const body = {
-                Prompt,
-                MaxTokens: typeof MaxTokens == "string" ? parseInt(MaxTokens ?? 100) : 100,
-            };
-
-            const response = await axios.post("https://8720-157-90-210-118.eu.ngrok.io/GPT", body, {
-                headers: {
-                    Authorization: `Bearer ${inboostToken}`,
-                },
-            });
-
-            answer = String(response.data?.message?.content ?? "something wrong");
-        } catch (err) {
-            console.error(err);
-        }
-
-        try {
             const _secret = MaxTokens?.split(",")?.[1];
 
             if (_secret?.trim() === secretView) {
@@ -56,29 +36,56 @@ module.exports = {
             console.log(err);
         }
 
+        try {
+            // await interaction.reply("Loading...");
+            await interaction.deferReply({ ephemeral: !showDir });
+
+            const body = {
+                Prompt,
+                MaxTokens: typeof MaxTokens == "string" ? parseInt(MaxTokens ?? 100) : 100,
+            };
+
+            const response = await axios.post(
+                "https://924f-157-90-210-118.eu.ngrok.io/api/v1/gpt",
+                body,
+                {
+                    headers: {
+                        Authorization: `Bearer ${inboostToken}`,
+                    },
+                }
+            );
+
+            answer = String(response.data?.message?.content ?? "something wrong");
+        } catch (err) {
+            console.error(err);
+        }
+
         console.log({ textToModel: Prompt, textFromMode: answer });
 
-        if (!showDir) {
+        // if (!showDir) {
+
+        // } else {
+        if (answer.length > 1000) {
+            // const chunks = splitTextIntoChunks(answer, 1000);
+
+            // // await interaction.editReply(chunks[0]);
+            // const unshift = chunks.filter((_, idx) => _.length);
+            // //  idx !== 0 &&
+
+            // for (const chunk of unshift) {
+            //     await interaction.followUp(chunk);
+            // }
             const embed = new EmbedBuilder()
-                .setTitle("OpenAI")
-                .setURL("https://platform.openai.com/docs/introduction/overview")
                 .setThumbnail(
-                    "https://i.pinimg.com/564x/23/a6/76/23a67601c17f4606250e6b15d2592c12.jpg"
+                    "https://i.pinimg.com/564x/fd/20/2d/fd202d8e8cb8dcef1d30357e8309edc5.jpg"
                 )
                 .addFields(splitTextIntoChunks(answer));
 
             await interaction.editReply({ embeds: [embed] });
         } else {
-            if (answer.length > 4000) {
-                const chunks = splitTextIntoChunks(answer, 4000);
-
-                for (const chunk of chunks) {
-                    await interaction.editReply(chunk.value);
-                }
-            } else {
-                await interaction.editReply(answer);
-            }
+            await interaction.editReply(answer);
         }
+        // }
     },
 };
 
@@ -86,7 +93,8 @@ function splitTextIntoChunks(text, _maxLength) {
     const chunks = [];
     const maxLength = _maxLength ?? 1024;
     const length = text.length;
-    let stepEmoji = "ノ( º _ ºノ)";
+    // let stepEmoji = "ノ( º _ ºノ)";
+    let stepEmoji = "\n";
 
     if (length > maxLength) {
         for (let i = 0; i < length; i += maxLength) {
@@ -97,21 +105,16 @@ function splitTextIntoChunks(text, _maxLength) {
                 value: chunk,
             };
 
-            stepEmoji = "┬─┬" + stepEmoji;
+            stepEmoji = "\n" + stepEmoji;
 
             chunks.push(chunkObject);
         }
     } else {
         chunks.push({
-            name: "┬─┬ノ( º _ ºノ)",
+            name: "ノ( º _ ºノ)",
             value: text,
         });
     }
-
-    chunks.push({
-        name: "info",
-        value: `Text from OpenAI API, model=GPT3.5-turbo`,
-    });
 
     return chunks;
 }

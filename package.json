@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "node index.js",
+        "start": "node src/index.js",
         "deployC": "node deploy-commands.js"
     },
     "author": "Pashafd",
@@ -17,7 +17,9 @@
         "discord.js": "^14.8.0",
         "dotenv": "^16.0.3",
         "inversify": "^6.0.1",
+        "midjourney-client": "^1.0.4",
         "node-fetch": "^2.6.9",
+        "node-replicate": "^1.1.5",
         "reflect-metadata": "^0.1.13",
         "typescript": "^5.0.2",
         "undici": "^5.21.0"
