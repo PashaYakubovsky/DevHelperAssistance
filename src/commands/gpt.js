@@ -42,7 +42,7 @@ module.exports = {
 
             const body = {
                 Prompt,
-                MaxTokens: typeof MaxTokens == "string" ? parseInt(MaxTokens ?? 100) : 100,
+                MaxTokens: typeof MaxTokens == "string" ? parseInt(MaxTokens ?? 100) : 1000,
             };
 
             const response = await axios.post(
