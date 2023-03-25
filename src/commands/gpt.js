@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const axios = require("axios");
-const { inboostToken, secretView } = require("../../config.json");
+const { inboostToken, secretView, apiDomain } = require("../../config.json");
 
 if (!String.prototype.trim) {
     String.prototype.trim = function () {
@@ -36,26 +36,23 @@ module.exports = {
             console.log(err);
         }
 
+        await interaction.deferReply({ ephemeral: !showDir });
+
         try {
             // await interaction.reply("Loading...");
-            await interaction.deferReply({ ephemeral: !showDir });
 
             const body = {
                 Prompt,
                 MaxTokens: typeof MaxTokens == "string" ? parseInt(MaxTokens ?? 100) : 100,
             };
 
-            const response = await axios.post(
-                "https://924f-157-90-210-118.eu.ngrok.io/api/v1/gpt",
-                body,
-                {
-                    headers: {
-                        Authorization: `Bearer ${inboostToken}`,
-                    },
-                }
-            );
+            const response = await axios.post(`${apiDomain}/api/v1/gpt`, body, {
+                headers: {
+                    Authorization: `Bearer ${inboostToken}`,
+                },
+            });
 
-            answer = String(response.data?.message?.content ?? "something wrong");
+            answer = String(response.data?.Delta?.Content ?? "something wrong");
         } catch (err) {
             console.error(err);
         }
