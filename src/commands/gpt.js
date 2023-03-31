@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const axios = require("axios");
 const { inboostToken, secretView, apiDomain } = require("../../config.json");
+const { splitTextIntoChunks } = require("../helper/helper");
 
 if (!String.prototype.trim) {
     String.prototype.trim = function () {
@@ -85,33 +86,3 @@ module.exports = {
         // }
     },
 };
-
-function splitTextIntoChunks(text, _maxLength) {
-    const chunks = [];
-    const maxLength = _maxLength ?? 1024;
-    const length = text.length;
-    // let stepEmoji = "ノ( º _ ºノ)";
-    let stepEmoji = "\n";
-
-    if (length > maxLength) {
-        for (let i = 0; i < length; i += maxLength) {
-            const chunk = text.substring(i, i + maxLength);
-
-            const chunkObject = {
-                name: stepEmoji,
-                value: chunk,
-            };
-
-            stepEmoji = "\n" + stepEmoji;
-
-            chunks.push(chunkObject);
-        }
-    } else {
-        chunks.push({
-            name: "ノ( º _ ºノ)",
-            value: text,
-        });
-    }
-
-    return chunks;
-}
