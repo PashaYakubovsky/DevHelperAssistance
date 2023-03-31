@@ -1,6 +1,9 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { bearerToken, secretView, apiDomain } = require("../../config.json");
+// const { api } = require("../api/createApi");
+const https = require("https");
 const axios = require("axios");
-const { inboostToken, secretView, apiDomain } = require("../../config.json");
+const { splitTextIntoChunks } = require("../helper/helper");
 
 if (!String.prototype.trim) {
     String.prototype.trim = function () {
@@ -46,10 +49,15 @@ module.exports = {
                 MaxTokens: typeof MaxTokens == "string" ? parseInt(MaxTokens ?? 100) : 1000,
             };
 
+            const agent = new https.Agent({
+                rejectUnauthorized: false,
+            });
+
             const response = await axios.post(`${apiDomain}/api/v1/gpt`, body, {
                 headers: {
-                    Authorization: `Bearer ${inboostToken}`,
+                    Authorization: `Bearer ${bearerToken}`,
                 },
+                httpsAgent: agent,
             });
 
             answer = String(response.data?.Delta?.Content ?? "something wrong");
@@ -85,33 +93,3 @@ module.exports = {
         // }
     },
 };
-
-function splitTextIntoChunks(text, _maxLength) {
-    const chunks = [];
-    const maxLength = _maxLength ?? 1024;
-    const length = text.length;
-    // let stepEmoji = "ノ( º _ ºノ)";
-    let stepEmoji = "\n";
-
-    if (length > maxLength) {
-        for (let i = 0; i < length; i += maxLength) {
-            const chunk = text.substring(i, i + maxLength);
-
-            const chunkObject = {
-                name: stepEmoji,
-                value: chunk,
-            };
-
-            stepEmoji = "\n" + stepEmoji;
-
-            chunks.push(chunkObject);
-        }
-    } else {
-        chunks.push({
-            name: "ノ( º _ ºノ)",
-            value: text,
-        });
-    }
-
-    return chunks;
-}
