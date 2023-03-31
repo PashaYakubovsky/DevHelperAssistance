@@ -48,8 +48,7 @@ module.exports = {
 
         return response.data;
     },
-
-    splitTextIntoChunks(text, _maxLength) {
+    splitTextIntoChunks: function (text, _maxLength) {
         const chunks = [];
         const maxLength = _maxLength ?? 1024;
         const length = text.length;

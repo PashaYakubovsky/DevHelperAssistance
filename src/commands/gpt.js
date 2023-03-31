@@ -1,6 +1,9 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { bearerToken, secretView, apiDomain } = require("../../config.json");
+// const { api } = require("../api/createApi");
+const https = require("https");
 const axios = require("axios");
-const { inboostToken, secretView, apiDomain } = require("../../config.json");
+const { secretView, apiDomain } = require("../../config.json");
 const { splitTextIntoChunks } = require("../helper/helper");
 
 if (!String.prototype.trim) {
@@ -47,10 +50,15 @@ module.exports = {
                 MaxTokens: typeof MaxTokens == "string" ? parseInt(MaxTokens ?? 100) : 1000,
             };
 
+            const agent = new https.Agent({
+                rejectUnauthorized: false,
+            });
+
             const response = await axios.post(`${apiDomain}/api/v1/gpt`, body, {
                 headers: {
-                    Authorization: `Bearer ${inboostToken}`,
+                    Authorization: `Bearer ${bearerToken}`,
                 },
+                httpsAgent: agent,
             });
 
             answer = String(response.data?.Delta?.Content ?? "something wrong");

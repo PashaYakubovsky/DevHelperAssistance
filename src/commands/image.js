@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 const axios = require("axios");
-const { apiDomain, inboostToken } = require("../../config.json");
+const { apiDomain, bearerToken } = require("../../config.json");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -32,7 +32,7 @@ module.exports = {
                     },
                     {
                         headers: {
-                            Authorization: "Bearer " + inboostToken,
+                            Authorization: "Bearer " + bearerToken,
                         },
                     }
                 );
