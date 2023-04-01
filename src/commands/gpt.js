@@ -1,9 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { bearerToken, secretView, apiDomain } = require("../../config.json");
-// const { api } = require("../api/createApi");
 const https = require("https");
 const axios = require("axios");
-const { secretView, apiDomain } = require("../../config.json");
 const { splitTextIntoChunks } = require("../helper/helper");
 
 if (!String.prototype.trim) {
