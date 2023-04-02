@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "CommonJS",
+        "lib": ["esnext"],
+        "allowJs": true,
+        "outDir": "build",
+        "rootDir": "src",
+        "esModuleInterop": true,
+        "resolveJsonModule": true
+    },
+    "include": ["./src"],
+    "exclude": ["node_modules"]
+}
