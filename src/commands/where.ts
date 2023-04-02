@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { ContextMenuCommandInteraction, SlashCommandBuilder } from "discord.js";
 import axios from "axios";
 import { bearerToken } from "../config.json";
 
@@ -8,18 +8,13 @@ export const data = new SlashCommandBuilder()
     .addStringOption(option =>
         option.setName("port").setDescription("specific port").setRequired(true)
     );
-export async function execute(interaction: any) {
+export async function execute(interaction: ContextMenuCommandInteraction) {
     await interaction.deferReply();
 
     let who = "port is free!";
-    let port = interaction.options.data?.find(
-        (option: { name: string }) => option?.name === "port"
-    )?.value;
-
-    // if (port !== "5053") port = String(parseInt(port) - 1000);
+    let port = interaction.options.data.find(option => option?.name === "port").value;
 
     try {
-        // const port = await axios("https://mhp.inboost.ai:5053/api/who");
         const response = await axios.get(`https://localhost:${port}/api/who`, {
             headers: {
                 Authorization: `bearer ${bearerToken}`,

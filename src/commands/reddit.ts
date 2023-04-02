@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { Interaction, MessageContextMenuCommandInteraction, SlashCommandBuilder } from "discord.js";
 import axios from "axios";
 
 export const data = new SlashCommandBuilder()
@@ -13,16 +13,12 @@ export const data = new SlashCommandBuilder()
     .addNumberOption(option =>
         option.setName("limit").setDescription("how many posts from reddit get?").setRequired(false)
     );
-export async function execute(interaction: {
-    options: { data: { name: string; value: unknown }[] };
-    deferReply: () => Promise<void>;
-    editReply: (arg0: unknown) => any;
-}) {
+export async function execute(interaction: MessageContextMenuCommandInteraction) {
     const subredditName =
-        interaction.options.data?.find(option => option?.name === "subreddit")?.value ??
+        interaction.options.data.find(option => option.name === "subreddit")?.value ??
         "ProgrammerHumor";
     const limit = Number(
-        interaction.options.data?.find(option => option?.name === "limit")?.value ?? 10
+        interaction.options.data.find(option => option.name === "limit")?.value ?? 10
     );
 
     await interaction.deferReply();
@@ -30,7 +26,7 @@ export async function execute(interaction: {
     try {
         // Fetch the list of posts from the subreddit
         const response = await axios.get(
-            `https://www.reddit.com/r/${subredditName}/hot.json?limit=${limit}`
+            `https://www.reddit.com/r/${subredditName}/new.json?limit=${limit}`
         );
 
         const arr = response.data.data.children;

@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post("/logger", async (req: Request, res: Response) => {
     try {
-        const body: { message: string; error: Error } = req.body;
+        const body: { message?: string; error: Error } = req.body;
         await axios.post(
             "https://discord.com/api/webhooks/1091485210656391199/lqMXuDIgmAkzf653UTJLiKo64NRbt4DGdJ4HcpfEMRofGjdbmThQBj3DFY6f0Fw8Jofh",
             {

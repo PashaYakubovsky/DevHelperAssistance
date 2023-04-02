@@ -1,4 +1,8 @@
-import { SlashCommandBuilder, EmbedBuilder, Embed } from "discord.js";
+import {
+    SlashCommandBuilder,
+    EmbedBuilder,
+    MessageContextMenuCommandInteraction,
+} from "discord.js";
 import { apiDomain, bearerToken } from "../config.json";
 import { splitTextIntoChunks } from "../helper/helper";
 import https from "https";
@@ -11,22 +15,17 @@ export const data = new SlashCommandBuilder()
         option.setName("prompt").setDescription("text for gpt model").setRequired(true)
     );
 
-export async function execute(interaction: {
-    options: { _hoistedOptions: { value: unknown }[] };
-    member: { user: { id: string } };
-    deferReply: (arg0: { ephemeral: boolean }) => Promise<void>;
-    editReply: (arg0: { embeds: EmbedBuilder[] } | string) => Promise<void>;
-}) {
+export async function execute(interaction: MessageContextMenuCommandInteraction) {
     let answer = "error when trying to get the answer";
-    const Prompt = interaction.options._hoistedOptions?.[0]?.value;
-    const UserId = interaction.member.user.id;
+    const userId = interaction.member.user.id;
+    let prompt = interaction.options.data.find(predicate => predicate.name === "prompt").value;
 
     await interaction.deferReply({ ephemeral: true });
 
     try {
         const body = {
-            Prompt,
-            UserId,
+            Prompt: prompt,
+            UserId: userId,
         };
 
         const agent = new https.Agent({
@@ -45,7 +44,7 @@ export async function execute(interaction: {
         console.error(err);
     }
 
-    console.log({ textToModel: Prompt, textFromMode: answer });
+    console.log({ textToModel: prompt, textFromMode: answer });
 
     if (answer.length > 1000) {
         const embed = new EmbedBuilder()

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { Interaction, MessageContextMenuCommandInteraction, SlashCommandBuilder } from "discord.js";
 import axios from "axios";
 import { apiDomain, bearerToken } from "../config.json";
 
@@ -9,17 +9,10 @@ export const data = new SlashCommandBuilder()
         option.setName("prompt").setDescription("what you want to do with image?").setRequired(true)
     );
 
-export async function execute(interaction: {
-    deferReply: () => Promise<void>;
-    options: { data: { name: string; value: unknown }[] };
-    user: { id: string };
-    editReply: (arg0: unknown) => any;
-}) {
+export async function execute(interaction: MessageContextMenuCommandInteraction) {
     await interaction.deferReply();
-    const prompt = interaction.options.data?.find(option => option?.name === "prompt")?.value;
+    const prompt = interaction.options.data.find(option => option?.name === "prompt").value;
     const user = interaction.user.id;
-    // const attachment = interaction.options.getAttachment("image");
-    // const url = attachment.url;
 
     if (prompt) {
         try {

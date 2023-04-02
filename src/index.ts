@@ -1,9 +1,8 @@
 import https from "https";
 import http from "http";
-import { Interaction } from "discord.js";
+import { Interaction, Client, Events, GatewayIntentBits } from "discord.js";
 import fs from "node:fs";
 import path from "node:path";
-import { Client, Events, GatewayIntentBits } from "discord.js";
 import { token, port, sslPassword } from "./config.json";
 import express from "express";
 import bodyParser from "body-parser";
@@ -12,6 +11,12 @@ import helmet from "helmet";
 import morgan from "morgan";
 import * as commandModules from "./commands";
 import loggerRouter from "./controllers/logger";
+
+if (!String.prototype.trim) {
+    String.prototype.trim = function () {
+        return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
+    };
+}
 
 const app = express();
 

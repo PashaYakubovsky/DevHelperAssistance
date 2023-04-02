@@ -1,15 +1,10 @@
-import { SlashCommandBuilder, EmbedBuilder, Interaction } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
 import { bearerToken, secretView, apiDomain } from "../config.json";
 import https from "https";
 import axios from "axios";
 import { splitTextIntoChunks } from "../helper/helper";
 
-if (!String.prototype.trim) {
-    String.prototype.trim = function () {
-        return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
-    };
-}
-export type DirectOptionInteraction = { options: { _hoistedOptions: any[] } };
+export type DirectOptionInteraction = { options: { _hoistedOptions: { value: unknown }[] } };
 
 export const data = new SlashCommandBuilder()
     .setName("gpt")
@@ -21,34 +16,32 @@ export const data = new SlashCommandBuilder()
         option.setName("tokens").setDescription("how many tokens?").setRequired(false)
     );
 
-export async function execute(interaction: Interaction) {
+export async function execute(interaction: ChatInputCommandInteraction) {
     let answer = "error when trying to get the answer";
     let showDir = false;
-    const Prompt = (interaction as unknown as DirectOptionInteraction).options._hoistedOptions?.[0]
-        ?.value;
-    let MaxTokens = (interaction as unknown as DirectOptionInteraction).options._hoistedOptions?.[1]
-        ?.value;
+    let maxTokens = interaction.options.data.find(predicate => predicate.name === "tokens")?.value;
+    let prompt = interaction.options.data.find(predicate => predicate.name === "prompt").value;
 
     try {
-        const _secret = MaxTokens?.split(",")?.[1];
+        if (typeof maxTokens === "string") {
+            const _secret = maxTokens?.split(",")?.[1];
 
-        if (_secret?.trim() === secretView) {
-            // change view type ai bot answers
-            MaxTokens = String(parseInt(MaxTokens));
-            showDir = true;
+            if (_secret?.trim() === secretView) {
+                // change view type ai bot answers
+                maxTokens = String(parseInt(maxTokens));
+                showDir = true;
+            }
         }
     } catch (err) {
         console.log(err);
     }
 
-    await (interaction as any).deferReply({ ephemeral: !showDir });
+    await interaction.deferReply({ ephemeral: !showDir });
 
     try {
-        // await interaction.reply("Loading...");
-
         const body = {
-            Prompt,
-            MaxTokens: typeof MaxTokens == "string" ? parseInt(MaxTokens ?? "100") : 1000,
+            Prompt: prompt,
+            MaxTokens: typeof maxTokens == "string" ? parseInt(maxTokens ?? "100") : 1000,
         };
 
         const agent = new https.Agent({
@@ -67,28 +60,15 @@ export async function execute(interaction: Interaction) {
         console.error(err);
     }
 
-    console.log({ textToModel: Prompt, textFromMode: answer });
+    console.log({ textToModel: prompt, textFromMode: answer });
 
-    // if (!showDir) {
-
-    // } else {
     if (answer.length > 1000) {
-        // const chunks = splitTextIntoChunks(answer, 1000);
-
-        // // await interaction.editReply(chunks[0]);
-        // const unshift = chunks.filter((_, idx) => _.length);
-        // //  idx !== 0 &&
-
-        // for (const chunk of unshift) {
-        //     await interaction.followUp(chunk);
-        // }
         const embed = new EmbedBuilder()
             .setThumbnail("https://i.pinimg.com/564x/fd/20/2d/fd202d8e8cb8dcef1d30357e8309edc5.jpg")
             .addFields(splitTextIntoChunks(answer));
 
-        await (interaction as any).editReply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed] });
     } else {
-        await (interaction as any).editReply(answer);
+        await interaction.editReply(answer);
     }
-    // }
 }
