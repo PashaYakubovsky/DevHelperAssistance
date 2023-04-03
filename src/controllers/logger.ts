@@ -9,18 +9,13 @@ router.post("/logger", async (req: Request, res: Response) => {
     try {
         const body: { message?: string; error: Error } = req.body;
         await axios.post(
-            "https://discord.com/api/webhooks/1091485210656391199/lqMXuDIgmAkzf653UTJLiKo64NRbt4DGdJ4HcpfEMRofGjdbmThQBj3DFY6f0Fw8Jofh",
+            "https://discord.com/api/webhooks/1092348638568652800/Gyf5rOD_pf6HSc4Hn1qSEhiSmdownjx7AQbPNl4zzPFtVFDsKoJRJwIloqS8XfTzMKHs",
             {
                 embeds: [
-                    new EmbedBuilder()
-                        .setThumbnail(
-                            "https://i.pinimg.com/564x/9b/5f/b6/9b5fb6bb1bbde69160dc24223baf53e0.jpg"
-                        )
-                        .setDescription("🚫 Oops! Something went wrong")
-                        .setFields({
-                            name: body.message ?? "_",
-                            value: JSON.stringify(body.error),
-                        }),
+                    new EmbedBuilder().setDescription("🚫 Oops! Something went wrong").setFields({
+                        name: body.message ?? "_",
+                        value: JSON.stringify(body.error),
+                    }),
                 ],
             }
         );
