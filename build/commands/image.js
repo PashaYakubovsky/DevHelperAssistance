@@ -21,13 +21,11 @@ exports.data = new discord_js_1.SlashCommandBuilder()
     .setDescription("make something with image")
     .addStringOption(option => option.setName("prompt").setDescription("what you want to do with image?").setRequired(true));
 function execute(interaction) {
-    var _a, _b, _c, _d;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         yield interaction.deferReply();
-        const prompt = (_b = (_a = interaction.options.data) === null || _a === void 0 ? void 0 : _a.find(option => (option === null || option === void 0 ? void 0 : option.name) === "prompt")) === null || _b === void 0 ? void 0 : _b.value;
+        const prompt = interaction.options.data.find(option => (option === null || option === void 0 ? void 0 : option.name) === "prompt").value;
         const user = interaction.user.id;
-        // const attachment = interaction.options.getAttachment("image");
-        // const url = attachment.url;
         if (prompt) {
             try {
                 const response = yield axios_1.default.post(`${config_json_1.apiDomain}/api/v1/image`, {
@@ -38,7 +36,7 @@ function execute(interaction) {
                         Authorization: "Bearer " + config_json_1.bearerToken,
                     },
                 });
-                yield interaction.editReply((_d = (_c = response.data) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.Url);
+                yield interaction.editReply((_b = (_a = response.data) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.Url);
             }
             catch (err) {
                 console.error(err);

@@ -1,3 +1,4 @@
+import https from "https";
 import express from "express";
 import axios from "axios";
 import { EmbedBuilder } from "discord.js";
@@ -8,6 +9,9 @@ const router = express.Router();
 
 router.post("/logger", async (req: Request, res: Response) => {
     try {
+        const agent = new https.Agent({
+            rejectUnauthorized: false,
+        });
         const body: { message?: string; error: string } = req.body;
         const json = JSON.stringify(body?.error, null, 4);
         let chunks = splitTextIntoChunks(json, 1000);

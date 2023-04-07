@@ -24,18 +24,18 @@ exports.data = new discord_js_1.SlashCommandBuilder()
     .setRequired(false))
     .addNumberOption(option => option.setName("limit").setDescription("how many posts from reddit get?").setRequired(false));
 function execute(interaction) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
-        const subredditName = (_c = (_b = (_a = interaction.options.data) === null || _a === void 0 ? void 0 : _a.find(option => (option === null || option === void 0 ? void 0 : option.name) === "subreddit")) === null || _b === void 0 ? void 0 : _b.value) !== null && _c !== void 0 ? _c : "ProgrammerHumor";
-        const limit = Number((_f = (_e = (_d = interaction.options.data) === null || _d === void 0 ? void 0 : _d.find(option => (option === null || option === void 0 ? void 0 : option.name) === "limit")) === null || _e === void 0 ? void 0 : _e.value) !== null && _f !== void 0 ? _f : 10);
+        const subredditName = (_b = (_a = interaction.options.data.find(option => option.name === "subreddit")) === null || _a === void 0 ? void 0 : _a.value) !== null && _b !== void 0 ? _b : "ProgrammerHumor";
+        const limit = Number((_d = (_c = interaction.options.data.find(option => option.name === "limit")) === null || _c === void 0 ? void 0 : _c.value) !== null && _d !== void 0 ? _d : 10);
         yield interaction.deferReply();
         try {
             // Fetch the list of posts from the subreddit
-            const response = yield axios_1.default.get(`https://www.reddit.com/r/${subredditName}/hot.json?limit=${limit}`);
+            const response = yield axios_1.default.get(`https://www.reddit.com/r/${subredditName}/new.json?limit=${limit}`);
             const arr = response.data.data.children;
             const randomIndex = Math.floor(Math.random() * arr.length);
             const randomElement = arr.splice(randomIndex, 1)[0];
-            yield interaction.editReply((_g = randomElement === null || randomElement === void 0 ? void 0 : randomElement.data) === null || _g === void 0 ? void 0 : _g.url);
+            yield interaction.editReply((_e = randomElement === null || randomElement === void 0 ? void 0 : randomElement.data) === null || _e === void 0 ? void 0 : _e.url);
         }
         catch (err) {
             console.error(err);

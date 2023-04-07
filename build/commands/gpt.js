@@ -18,29 +18,26 @@ const config_json_1 = require("../config.json");
 const https_1 = __importDefault(require("https"));
 const axios_1 = __importDefault(require("axios"));
 const helper_1 = require("../helper/helper");
-if (!String.prototype.trim) {
-    String.prototype.trim = function () {
-        return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
-    };
-}
 exports.data = new discord_js_1.SlashCommandBuilder()
     .setName("gpt")
     .setDescription("Ask the ChatGPT.")
     .addStringOption(option => option.setName("prompt").setDescription("text for gpt model").setRequired(true))
     .addStringOption(option => option.setName("tokens").setDescription("how many tokens?").setRequired(false));
 function execute(interaction) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         let answer = "error when trying to get the answer";
         let showDir = false;
-        const Prompt = (_b = (_a = interaction.options._hoistedOptions) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.value;
-        let MaxTokens = (_d = (_c = interaction.options._hoistedOptions) === null || _c === void 0 ? void 0 : _c[1]) === null || _d === void 0 ? void 0 : _d.value;
+        let maxTokens = (_a = interaction.options.data.find(predicate => predicate.name === "tokens")) === null || _a === void 0 ? void 0 : _a.value;
+        let prompt = interaction.options.data.find(predicate => predicate.name === "prompt").value;
         try {
-            const _secret = (_e = MaxTokens === null || MaxTokens === void 0 ? void 0 : MaxTokens.split(",")) === null || _e === void 0 ? void 0 : _e[1];
-            if ((_secret === null || _secret === void 0 ? void 0 : _secret.trim()) === config_json_1.secretView) {
-                // change view type ai bot answers
-                MaxTokens = String(parseInt(MaxTokens));
-                showDir = true;
+            if (typeof maxTokens === "string") {
+                const _secret = (_b = maxTokens === null || maxTokens === void 0 ? void 0 : maxTokens.split(",")) === null || _b === void 0 ? void 0 : _b[1];
+                if ((_secret === null || _secret === void 0 ? void 0 : _secret.trim()) === config_json_1.secretView) {
+                    // change view type ai bot answers
+                    maxTokens = String(parseInt(maxTokens));
+                    showDir = true;
+                }
             }
         }
         catch (err) {
@@ -48,10 +45,9 @@ function execute(interaction) {
         }
         yield interaction.deferReply({ ephemeral: !showDir });
         try {
-            // await interaction.reply("Loading...");
             const body = {
-                Prompt,
-                MaxTokens: typeof MaxTokens == "string" ? parseInt(MaxTokens !== null && MaxTokens !== void 0 ? MaxTokens : "100") : 1000,
+                Prompt: prompt,
+                MaxTokens: typeof maxTokens == "string" ? parseInt(maxTokens !== null && maxTokens !== void 0 ? maxTokens : "100") : 1000,
             };
             const agent = new https_1.default.Agent({
                 rejectUnauthorized: false,
@@ -62,22 +58,13 @@ function execute(interaction) {
                 },
                 httpsAgent: agent,
             });
-            answer = String((_h = (_g = (_f = response.data) === null || _f === void 0 ? void 0 : _f.Delta) === null || _g === void 0 ? void 0 : _g.Content) !== null && _h !== void 0 ? _h : "something wrong");
+            answer = String((_e = (_d = (_c = response.data) === null || _c === void 0 ? void 0 : _c.Delta) === null || _d === void 0 ? void 0 : _d.Content) !== null && _e !== void 0 ? _e : "something wrong");
         }
         catch (err) {
             console.error(err);
         }
-        console.log({ textToModel: Prompt, textFromMode: answer });
-        // if (!showDir) {
-        // } else {
+        console.log({ textToModel: prompt, textFromMode: answer });
         if (answer.length > 1000) {
-            // const chunks = splitTextIntoChunks(answer, 1000);
-            // // await interaction.editReply(chunks[0]);
-            // const unshift = chunks.filter((_, idx) => _.length);
-            // //  idx !== 0 &&
-            // for (const chunk of unshift) {
-            //     await interaction.followUp(chunk);
-            // }
             const embed = new discord_js_1.EmbedBuilder()
                 .setThumbnail("https://i.pinimg.com/564x/fd/20/2d/fd202d8e8cb8dcef1d30357e8309edc5.jpg")
                 .addFields((0, helper_1.splitTextIntoChunks)(answer));

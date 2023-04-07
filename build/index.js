@@ -35,19 +35,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const https = require("https");
-const http = require("http");
+const https_1 = __importDefault(require("https"));
+const http_1 = __importDefault(require("http"));
+const discord_js_1 = require("discord.js");
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
-const discord_js_1 = require("discord.js");
 const config_json_1 = require("./config.json");
 const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
-const axios_1 = __importDefault(require("axios"));
 const commandModules = __importStar(require("./commands"));
+const logger_1 = __importDefault(require("./controllers/logger"));
+if (!String.prototype.trim) {
+    String.prototype.trim = function () {
+        return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
+    };
+}
 const app = (0, express_1.default)();
 // adding Helmet to enhance your Rest API's security
 app.use((0, helmet_1.default)());
@@ -57,34 +62,8 @@ app.use(body_parser_1.default.json());
 app.use((0, cors_1.default)());
 // adding morgan to log HTTP requests
 app.use((0, morgan_1.default)("combined"));
-// defining an endpoint to return all ads
-app.post("/api/v1/logger", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    try {
-        const body = req.body;
-        yield axios_1.default.post("https://discord.com/api/webhooks/1091485210656391199/lqMXuDIgmAkzf653UTJLiKo64NRbt4DGdJ4HcpfEMRofGjdbmThQBj3DFY6f0Fw8Jofh", {
-            embeds: [
-                new discord_js_1.EmbedBuilder()
-                    .setThumbnail("https://i.pinimg.com/564x/9b/5f/b6/9b5fb6bb1bbde69160dc24223baf53e0.jpg")
-                    .setDescription("🚫 Oops! Something went wrong")
-                    .setFields({
-                    name: (_a = body.message) !== null && _a !== void 0 ? _a : "_",
-                    value: JSON.stringify(body.error),
-                }),
-            ],
-        });
-    }
-    catch (error) {
-        console.error(error);
-        res.status(400).send(JSON.stringify(error));
-    }
-    res.send(200);
-}));
-const options = {
-    passphrase: config_json_1.sslPassword,
-    pfx: node_fs_1.default.readFileSync(node_path_1.default.join(__dirname, "STAR_inboost_ai.pfx")),
-};
-const httpsServer = https.createServer(options, app);
+// settings the routes for api
+app.use("/api/v1", logger_1.default);
 const bot = () => {
     const client = new discord_js_1.Client({ intents: [discord_js_1.GatewayIntentBits.Guilds] });
     client.on(discord_js_1.Events.InteractionCreate, (interaction) => __awaiter(void 0, void 0, void 0, function* () {
@@ -115,8 +94,14 @@ const bot = () => {
     client.login(config_json_1.token);
 };
 try {
+    const options = {
+        passphrase: config_json_1.sslPassword,
+        pfx: node_fs_1.default.readFileSync(node_path_1.default.join(__dirname, "STAR_inboost_ai.pfx")),
+    };
+    const httpsServer = https_1.default.createServer(options, app);
     httpsServer.listen(config_json_1.port, bot);
 }
-catch (err) {
-    console.log(err);
+catch (_a) {
+    const httpServer = http_1.default.createServer(app);
+    httpServer.listen(+config_json_1.port - 1000, bot);
 }

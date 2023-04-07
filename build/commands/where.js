@@ -21,14 +21,11 @@ exports.data = new discord_js_1.SlashCommandBuilder()
     .setDescription("I can tell you where {{yours}} port")
     .addStringOption(option => option.setName("port").setDescription("specific port").setRequired(true));
 function execute(interaction) {
-    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         yield interaction.deferReply();
         let who = "port is free!";
-        let port = (_b = (_a = interaction.options.data) === null || _a === void 0 ? void 0 : _a.find((option) => (option === null || option === void 0 ? void 0 : option.name) === "port")) === null || _b === void 0 ? void 0 : _b.value;
-        // if (port !== "5053") port = String(parseInt(port) - 1000);
+        let port = interaction.options.data.find(option => (option === null || option === void 0 ? void 0 : option.name) === "port").value;
         try {
-            // const port = await axios("https://mhp.inboost.ai:5053/api/who");
             const response = yield axios_1.default.get(`https://localhost:${port}/api/who`, {
                 headers: {
                     Authorization: `bearer ${config_json_1.bearerToken}`,
