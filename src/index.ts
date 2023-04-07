@@ -73,6 +73,8 @@ try {
     };
     const httpsServer = https.createServer(options, app);
     httpsServer.listen(port, bot);
+    console.log(`listening on port ${port}!`)
+
 } catch {
     const httpServer = http.createServer(app);
     httpServer.listen(+port - 1000, bot);

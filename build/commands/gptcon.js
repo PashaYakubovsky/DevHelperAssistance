@@ -23,16 +23,16 @@ exports.data = new discord_js_1.SlashCommandBuilder()
     .setDescription("Start the conversation with ChatGPT.")
     .addStringOption(option => option.setName("prompt").setDescription("text for gpt model").setRequired(true));
 function execute(interaction) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         let answer = "error when trying to get the answer";
-        const Prompt = (_b = (_a = interaction.options._hoistedOptions) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.value;
-        const UserId = interaction.member.user.id;
+        const userId = interaction.member.user.id;
+        let prompt = interaction.options.data.find(predicate => predicate.name === "prompt").value;
         yield interaction.deferReply({ ephemeral: true });
         try {
             const body = {
-                Prompt,
-                UserId,
+                Prompt: prompt,
+                UserId: userId,
             };
             const agent = new https_1.default.Agent({
                 rejectUnauthorized: false,
@@ -43,12 +43,12 @@ function execute(interaction) {
                 },
                 httpsAgent: agent,
             });
-            answer = String((_e = (_d = (_c = response.data) === null || _c === void 0 ? void 0 : _c.Delta) === null || _d === void 0 ? void 0 : _d.Content) !== null && _e !== void 0 ? _e : "something wrong");
+            answer = String((_c = (_b = (_a = response.data) === null || _a === void 0 ? void 0 : _a.Delta) === null || _b === void 0 ? void 0 : _b.Content) !== null && _c !== void 0 ? _c : "something wrong");
         }
         catch (err) {
             console.error(err);
         }
-        console.log({ textToModel: Prompt, textFromMode: answer });
+        console.log({ textToModel: prompt, textFromMode: answer });
         if (answer.length > 1000) {
             const embed = new discord_js_1.EmbedBuilder()
                 .setThumbnail("https://i.pinimg.com/564x/fd/20/2d/fd202d8e8cb8dcef1d30357e8309edc5.jpg")
