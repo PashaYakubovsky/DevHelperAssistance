@@ -22,6 +22,10 @@ export async function execute(interaction: ContextMenuCommandInteraction) {
         });
 
         who = response.data;
+
+        if (who === "Это Миша!") {
+            who = "Це Міша!!!";
+        }
     } catch (err) {
         console.log(err);
     }
