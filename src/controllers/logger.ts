@@ -20,16 +20,20 @@ router.post("/logger", async (req: Request, res: Response) => {
             .setDescription("🚫 Oops! Something went wrong")
             .setTitle(body?.message ?? "_")
             .setFields(chunks);
-        const isDev = process.env.NODE_ENV === "development";
+        const origin = req.get("origin");
+        const isDev = origin.includes("localhost");
 
         await axios.post(
             `https://discord.com/api/webhooks/${
                 isDev
-                    ? "1092348638568652800/Gyf5rOD_pf6HSc4Hn1qSEhiSmdownjx7AQbPNl4zzPFtVFDsKoJRJwIloqS8XfTzMKHs"
-                    : "1091485210656391199/lqMXuDIgmAkzf653UTJLiKo64NRbt4DGdJ4HcpfEMRofGjdbmThQBj3DFY6f0Fw8Jofh"
+                    ? "1091485210656391199/lqMXuDIgmAkzf653UTJLiKo64NRbt4DGdJ4HcpfEMRofGjdbmThQBj3DFY6f0Fw8Jofh"
+                    : "1092348638568652800/Gyf5rOD_pf6HSc4Hn1qSEhiSmdownjx7AQbPNl4zzPFtVFDsKoJRJwIloqS8XfTzMKHs"
             }`,
             {
                 embeds: [embed],
+            },
+            {
+                httpsAgent: agent,
             }
         );
     } catch (error) {

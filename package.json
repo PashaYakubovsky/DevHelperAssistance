@@ -4,7 +4,7 @@
     "description": "AI Assistance in Discord Bot is a feature that allows users to interact with an artificial intelligence-based bot on Discord. This bot can provide users with helpful information, answer questions, and provide assistance in a variety of tasks. It can also be used to automate certain tasks, such as moderation, data analysis, and more. AI Assistance in Discord Bot is an incredibly powerful tool.",
     "main": "src/index.ts",
     "scripts": {
-        "start": "npx nodemon -x 'node src/index.ts'",
+        "start": "npx nodemon -x npx ts-node src/index.ts",
         "deploy:commands": "tsc && node build/deploy-commands.js",
         "build": "rimraf ./build && tsc"
     },
