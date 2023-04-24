@@ -15,11 +15,12 @@ for (const module of Object.values<any>(commandModules)) {
 
 // Construct and prepare an instance of the REST module
 const rest = new REST({ version: "9" }).setToken(token);
-
-rest.put(Routes.applicationGuildCommands(clientId, guildId), {
-    body: commands,
-}).then((data: string[]) => {
-    console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+guildId.forEach(guild => {
+    rest.put(Routes.applicationGuildCommands(clientId, guild), {
+        body: commands,
+    }).then((data: string[]) => {
+        console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+    });
 });
 
 // and deploy your commands!

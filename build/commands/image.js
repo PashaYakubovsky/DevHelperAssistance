@@ -17,7 +17,7 @@ const discord_js_1 = require("discord.js");
 const axios_1 = __importDefault(require("axios"));
 const config_json_1 = require("../config.json");
 exports.data = new discord_js_1.SlashCommandBuilder()
-    .setName("imagecr")
+    .setName("image")
     .setDescription("make something with image")
     .addStringOption(option => option.setName("prompt").setDescription("what you want to do with image?").setRequired(true));
 function execute(interaction) {

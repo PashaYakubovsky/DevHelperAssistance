@@ -100,6 +100,7 @@ try {
     };
     const httpsServer = https_1.default.createServer(options, app);
     httpsServer.listen(config_json_1.port, bot);
+    console.log(`listening on port ${config_json_1.port}!`);
 }
 catch (_a) {
     const httpServer = http_1.default.createServer(app);

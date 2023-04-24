@@ -1,9 +1,10 @@
-import { Interaction, MessageContextMenuCommandInteraction, SlashCommandBuilder } from "discord.js";
+import https from "https";
+import { MessageContextMenuCommandInteraction, SlashCommandBuilder } from "discord.js";
 import axios from "axios";
 import { apiDomain, bearerToken } from "../config.json";
 
 export const data = new SlashCommandBuilder()
-    .setName("imagecr")
+    .setName("image")
     .setDescription("make something with image")
     .addStringOption(option =>
         option.setName("prompt").setDescription("what you want to do with image?").setRequired(true)
@@ -16,6 +17,10 @@ export async function execute(interaction: MessageContextMenuCommandInteraction)
 
     if (prompt) {
         try {
+            const agent = new https.Agent({
+                rejectUnauthorized: false,
+            });
+
             const response = await axios.post(
                 `${apiDomain}/api/v1/image`,
                 {
@@ -26,6 +31,7 @@ export async function execute(interaction: MessageContextMenuCommandInteraction)
                     headers: {
                         Authorization: "Bearer " + bearerToken,
                     },
+                    httpsAgent: agent,
                 }
             );
 
