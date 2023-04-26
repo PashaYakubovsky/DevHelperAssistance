@@ -33,10 +33,12 @@ for (const module of Object.values(commandModules)) {
 }
 // Construct and prepare an instance of the REST module
 const rest = new discord_js_1.REST({ version: "9" }).setToken(config_json_1.token);
-rest.put(v9_1.Routes.applicationGuildCommands(config_json_1.clientId, config_json_1.guildId), {
-    body: commands,
-}).then((data) => {
-    console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+config_json_1.guildId.forEach(guild => {
+    rest.put(v9_1.Routes.applicationGuildCommands(config_json_1.clientId, guild), {
+        body: commands,
+    }).then((data) => {
+        console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+    });
 });
 // and deploy your commands!
 // try {
