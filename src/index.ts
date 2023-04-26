@@ -11,6 +11,8 @@ import helmet from "helmet";
 import morgan from "morgan";
 import * as commandModules from "./commands";
 import loggerRouter from "./controllers/logger";
+import { Server } from "socket.io";
+// import { Server } from "socket.io";
 
 if (!String.prototype.trim) {
     String.prototype.trim = function () {
@@ -73,9 +75,57 @@ try {
     };
     const httpsServer = https.createServer(options, app);
     httpsServer.listen(port, bot);
-    console.log(`listening on port ${port}!`)
+    console.log(`listening on port ${port}!`);
+} catch {}
 
-} catch {
-    const httpServer = http.createServer(app);
-    httpServer.listen(+port - 1000, bot);
-}
+const httpServer = http.createServer(app);
+httpServer.listen(String(+port - 1000));
+
+// Web socket
+const io = new Server(httpServer, {
+    cors: {
+        origin: [
+            "http://localhost:4200",
+            "http://localhost:3000",
+            "https://pashayakubovsky.netlify.app",
+        ],
+        methods: ["GET", "POST"],
+    },
+});
+
+io.on("connection", socket => {
+    console.log("User connected: " + socket.id);
+    socket.on("disconnect", () => {
+        console.log("user disconnected");
+    });
+    socket.on("message", args => {
+        const message = args?.message;
+
+        if (message) {
+            io.emit("message", message);
+        }
+    });
+});
+
+io.listen(3000);
+
+app.post("/change-3d-text", async (req, res) => {
+    const { message } = req.body;
+
+    // const io = new Server(httpServer, {
+    //     cors: {
+    //         origin: ["http://localhost:4200", "http://localhost:3000"],
+    //         methods: ["GET", "POST"],
+    //     },
+    // });
+    // , {
+    //     allowRequest: (req, callback) => {
+    //         const noOriginHeader = req.headers.origin === undefined;
+    //         callback(null, noOriginHeader);
+    //     },
+    // }
+
+    io.emit("changeText", message ?? "test");
+
+    res.status(200).send("Message received");
+});

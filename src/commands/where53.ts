@@ -16,6 +16,10 @@ export async function execute(interaction: any) {
             },
         });
 
+        if (who === "Это Миша!") {
+            who = "Це Міша!!!";
+        }
+
         who = response.data;
     } catch (err) {
         console.log(err);
