@@ -81,7 +81,7 @@ const bot = () => {
     client.login(token);
 };
 
-try {
+// try {
 const options = {
     passphrase: sslPassword,
     pfx: fs.readFileSync(path.join(__dirname, "STAR_inboost_ai.pfx")),
