@@ -10,8 +10,10 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import * as commandModules from "./commands";
-import loggerRouter from "./controllers/logger";
+import loggerRouter from "./routes/logger";
+// import usersRouter from "./routes/users";
 import { Server } from "socket.io";
+import axios from "axios";
 // import { Server } from "socket.io";
 
 if (!String.prototype.trim) {
@@ -36,6 +38,17 @@ app.use(morgan("combined"));
 
 // settings the routes for api
 app.use("/api/v1", loggerRouter);
+// app.use("/api/v1/users", usersRouter);
+app.post("/api/v1/getSitePreview", (req, res) => {
+    try {
+        const body = req.body;
+
+        debugger;
+        const response = axios.post("https://cors-anywhere.herokuapp.com/" + body.url);
+    } catch (err) {
+        console.log(err);
+    }
+});
 
 const bot = () => {
     const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -86,8 +99,13 @@ const io = new Server(httpsServer, {
     cors: {
         origin: [
             "http://localhost:4200",
+            "http://localhost:4201",
             "http://localhost:3000",
             "https://pashayakubovsky.netlify.app",
+            "https://cors-anywhere.herokuapp.com",
+            "http://localhost:24055",
+            "https://1680-157-90-210-118.ngrok-free.app/",
+            "https://*.ngrok-free.app/",
         ],
         methods: ["GET", "POST"],
     },
@@ -95,15 +113,31 @@ const io = new Server(httpsServer, {
 
 io.on("connection", socket => {
     console.log("User connected: " + socket.id);
+
     socket.on("disconnect", () => {
         console.log("user disconnected");
     });
+
     socket.on("message", args => {
         const message = args?.message;
-
         if (message) {
             io.emit("message", message);
         }
+    });
+
+    socket.on("image", args => {
+        const imageData = args as {
+            name?: string;
+            type?: string;
+            data?: string | ArrayBuffer | null;
+            userId: string;
+        };
+
+        io.emit("image", imageData);
+    });
+
+    socket.on("typing", (args: { typing: boolean; user: { userId: string; name: string } }) => {
+        io.emit("typing", args);
     });
 });
 
@@ -111,19 +145,6 @@ io.listen(3000);
 
 app.post("/change-3d-text", async (req, res) => {
     const { message } = req.body;
-
-    // const io = new Server(httpServer, {
-    //     cors: {
-    //         origin: ["http://localhost:4200", "http://localhost:3000"],
-    //         methods: ["GET", "POST"],
-    //     },
-    // });
-    // , {
-    //     allowRequest: (req, callback) => {
-    //         const noOriginHeader = req.headers.origin === undefined;
-    //         callback(null, noOriginHeader);
-    //     },
-    // }
 
     io.emit("changeText", message ?? "test");
 
