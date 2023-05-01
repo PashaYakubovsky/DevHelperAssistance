@@ -11,9 +11,16 @@ import helmet from "helmet";
 import morgan from "morgan";
 import * as commandModules from "./commands";
 import loggerRouter from "./routes/logger";
-// import usersRouter from "./routes/users";
+import usersRouter from "./routes/users";
+import chatRouter from "./routes/chat";
 import { Server } from "socket.io";
-import axios from "axios";
+// import axios from "axios";
+import firebase from "firebase/app";
+import "firebase/storage";
+import db from "./db/config";
+import authRouter from "./routes/auth";
+import { v4 as uuid } from "uuid";
+
 // import { Server } from "socket.io";
 
 if (!String.prototype.trim) {
@@ -23,6 +30,8 @@ if (!String.prototype.trim) {
 }
 
 const app = express();
+
+require("dotenv").config();
 
 // adding Helmet to enhance your Rest API's security
 app.use(helmet());
@@ -38,17 +47,19 @@ app.use(morgan("combined"));
 
 // settings the routes for api
 app.use("/api/v1", loggerRouter);
+app.use("/api/v1", usersRouter);
+app.use("/api/v1", chatRouter);
+app.use("/api/v1", authRouter);
 // app.use("/api/v1/users", usersRouter);
-app.post("/api/v1/getSitePreview", (req, res) => {
-    try {
-        const body = req.body;
+// app.post("/api/v1/getSitePreview", (req, res) => {
+//     try {
+//         const body = req.body;
 
-        debugger;
-        const response = axios.post("https://cors-anywhere.herokuapp.com/" + body.url);
-    } catch (err) {
-        console.log(err);
-    }
-});
+//         const response = axios.post("https://cors-anywhere.herokuapp.com/" + body.url);
+//     } catch (err) {
+//         console.log(err);
+//     }
+// });
 
 const bot = () => {
     const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -106,6 +117,7 @@ const io = new Server(httpServer, {
             "http://localhost:24055",
             "https://1680-157-90-210-118.ngrok-free.app/",
             "https://*.ngrok-free.app/",
+            "https://1680-157-90-210-118.ngrok-free.app",
         ],
         methods: ["GET", "POST"],
     },
@@ -118,10 +130,12 @@ io.on("connection", socket => {
         console.log("user disconnected");
     });
 
-    socket.on("message", args => {
+    socket.on("message", async args => {
         const message = args?.message;
         if (message) {
             io.emit("message", message);
+
+            await db.collection("Messages").add(message);
         }
     });
 
@@ -129,11 +143,32 @@ io.on("connection", socket => {
         const imageData = args as {
             name?: string;
             type?: string;
-            data?: string | ArrayBuffer | null;
-            userId: string;
+            data?: File;
+            user?: any;
         };
 
         io.emit("image", imageData);
+
+        // const buffer = imageData?.data ?? "";
+        // const blob = new Blob([buffer], { type: imageData.type });
+
+        // const storage = firebase.getApp();
+        // const storageRef = ref(storage, imageData?.name);
+
+        // uploadBytes(storageRef, imageData?.data)?.then(snapshot => {
+        //     console.log("Uploaded a blob or file!");
+        // });
+
+        const newMessage = {
+            dateCreate: new Date().toISOString(),
+            messageId: uuid(),
+            message: "image",
+            status: 2,
+            user: imageData?.user,
+            isFromBlob: true,
+        };
+
+        db.collection("Messages").add(newMessage);
     });
 
     socket.on("typing", (args: { typing: boolean; user: { userId: string; name: string } }) => {
