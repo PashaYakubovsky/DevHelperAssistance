@@ -92,21 +92,21 @@ const bot = () => {
     client.login(token);
 };
 
-try {
-    const options = {
-        passphrase: sslPassword,
-        pfx: fs.readFileSync(path.join(__dirname, "STAR_inboost_ai.pfx")),
-    };
-    const httpsServer = https.createServer(options, app);
-    httpsServer.listen(port, bot);
-    console.log(`listening on port ${port}!`);
-} catch {}
+// try {
+const options = {
+    passphrase: sslPassword,
+    pfx: fs.readFileSync(path.join(__dirname, "STAR_inboost_ai.pfx")),
+};
+const httpsServer = https.createServer(options, app);
+httpsServer.listen(port, bot);
+console.log(`listening on port ${port}!`);
+// }  {}
 
 const httpServer = http.createServer(app);
 httpServer.listen(String(+port - 1000));
 
 // Web socket
-const io = new Server(httpServer, {
+const io = new Server(httpsServer, {
     cors: {
         origin: [
             "http://localhost:4200",
