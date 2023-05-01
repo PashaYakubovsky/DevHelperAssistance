@@ -106,6 +106,7 @@ const io = new Server(httpsServer, {
             "http://localhost:24055",
             "https://1680-157-90-210-118.ngrok-free.app/",
             "https://*.ngrok-free.app/",
+            "1680-157-90-210-118.ngrok-free.app",
         ],
         methods: ["GET", "POST"],
     },
