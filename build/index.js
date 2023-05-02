@@ -47,13 +47,22 @@ const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
 const commandModules = __importStar(require("./commands"));
-const logger_1 = __importDefault(require("./controllers/logger"));
+const logger_1 = __importDefault(require("./routes/logger"));
+const users_1 = __importDefault(require("./routes/users"));
+const chat_1 = __importDefault(require("./routes/chat"));
+const socket_io_1 = require("socket.io");
+require("firebase/storage");
+const config_1 = __importDefault(require("./db/config"));
+const auth_1 = __importDefault(require("./routes/auth"));
+const uuid_1 = require("uuid");
+// import { Server } from "socket.io";
 if (!String.prototype.trim) {
     String.prototype.trim = function () {
         return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
     };
 }
 const app = (0, express_1.default)();
+require("dotenv").config();
 // adding Helmet to enhance your Rest API's security
 app.use((0, helmet_1.default)());
 // using bodyParser to parse JSON bodies into JS objects
@@ -64,6 +73,23 @@ app.use((0, cors_1.default)());
 app.use((0, morgan_1.default)("combined"));
 // settings the routes for api
 app.use("/api/v1", logger_1.default);
+app.use("/api/v1", users_1.default);
+app.use("/api/v1", chat_1.default);
+app.use("/api/v1", auth_1.default);
+app.post("/change-3d-text", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { message } = req.body;
+    io.emit("changeText", message !== null && message !== void 0 ? message : "test");
+    res.status(200).send("Message received");
+}));
+// app.use("/api/v1/users", usersRouter);
+// app.post("/api/v1/getSitePreview", (req, res) => {
+//     try {
+//         const body = req.body;
+//         const response = axios.post("https://cors-anywhere.herokuapp.com/" + body.url);
+//     } catch (err) {
+//         console.log(err);
+//     }
+// });
 const bot = () => {
     const client = new discord_js_1.Client({ intents: [discord_js_1.GatewayIntentBits.Guilds] });
     client.on(discord_js_1.Events.InteractionCreate, (interaction) => __awaiter(void 0, void 0, void 0, function* () {
@@ -93,16 +119,65 @@ const bot = () => {
     }));
     client.login(config_json_1.token);
 };
-try {
-    const options = {
-        passphrase: config_json_1.sslPassword,
-        pfx: node_fs_1.default.readFileSync(node_path_1.default.join(__dirname, "STAR_inboost_ai.pfx")),
-    };
-    const httpsServer = https_1.default.createServer(options, app);
-    httpsServer.listen(config_json_1.port, bot);
-    console.log(`listening on port ${config_json_1.port}!`);
-}
-catch (_a) {
-    const httpServer = http_1.default.createServer(app);
-    httpServer.listen(+config_json_1.port - 1000, bot);
-}
+// try {
+const options = {
+    passphrase: config_json_1.sslPassword,
+    pfx: node_fs_1.default.readFileSync(node_path_1.default.join(__dirname, "STAR_inboost_ai.pfx")),
+};
+const httpsServer = https_1.default.createServer(options, app);
+httpsServer.listen(config_json_1.port, bot);
+console.log(`listening on port ${config_json_1.port}!`);
+// }  {}
+const httpServer = http_1.default.createServer(app);
+httpServer.listen(String(+config_json_1.port - 1000));
+// Web socket
+const io = new socket_io_1.Server(httpsServer, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST", "PUT"],
+    },
+});
+io.on("connection", (socket) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("User connected: " + socket.id);
+    // const doc = (await db.collection("Online").get()).docs[0];
+    // let counter = doc.data()?.count as number;
+    // await db.collection("Online").doc(doc.id).update({ count: counter });
+    socket.on("disconnect", () => __awaiter(void 0, void 0, void 0, function* () {
+        console.log("user disconnected");
+    }));
+    socket.on("closed", () => __awaiter(void 0, void 0, void 0, function* () {
+        console.log("socket closed");
+    }));
+    socket.on("message", (args) => __awaiter(void 0, void 0, void 0, function* () {
+        const message = args === null || args === void 0 ? void 0 : args.message;
+        if (message) {
+            io.emit("message", message);
+            yield config_1.default.collection("Messages").add(message);
+        }
+    }));
+    socket.on("image", args => {
+        const imageData = args;
+        io.emit("image", imageData);
+        // const buffer = imageData?.data ?? "";
+        // const blob = new Blob([buffer], { type: imageData.type });
+        // const storage = firebase.getApp();
+        // const storageRef = ref(storage, imageData?.name);
+        // uploadBytes(storageRef, imageData?.data)?.then(snapshot => {
+        //     console.log("Uploaded a blob or file!");
+        // });
+        const newMessage = {
+            dateCreate: new Date().toISOString(),
+            messageId: (0, uuid_1.v4)(),
+            message: "image",
+            status: 2,
+            user: imageData === null || imageData === void 0 ? void 0 : imageData.user,
+            isFromBlob: true,
+        };
+        config_1.default.collection("Messages").add(newMessage);
+    });
+    socket.on("typing", (args) => {
+        console.log(args);
+        io.emit("typing", args);
+    });
+}));
+io.listen(3000);

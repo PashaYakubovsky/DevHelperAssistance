@@ -8,6 +8,8 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: any) {
     let who = "port is free!";
 
+    await interaction.deferReply();
+
     try {
         // const port = await axios("https://mhp.inboost.ai:5053/api/who");
         const response = await axios.get("http://localhost:5050/api/who", {
@@ -16,7 +18,7 @@ export async function execute(interaction: any) {
             },
         });
 
-        if (who === "Это Миша!") {
+        if (who == "Это Миша!") {
             who = "Це Міша!!!";
         }
 
@@ -25,5 +27,5 @@ export async function execute(interaction: any) {
         console.log(err);
     }
 
-    await interaction.reply(who);
+    await interaction.editReply(who);
 }

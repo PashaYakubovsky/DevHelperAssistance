@@ -25,6 +25,7 @@
         "express-cors-anywhere": "^0.0.1-alpha.3",
         "firebase": "^9.21.0",
         "firebase-admin": "^11.7.0",
+        "glob": "^10.2.2",
         "helmet": "^6.0.1",
         "http": "^0.0.1-security",
         "inversify": "^6.0.1",

@@ -22,6 +22,7 @@ exports.data = new discord_js_1.SlashCommandBuilder()
 function execute(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         let who = "port is free!";
+        yield interaction.deferReply();
         try {
             // const port = await axios("https://mhp.inboost.ai:5053/api/who");
             const response = yield axios_1.default.get("http://localhost:5050/api/who", {
@@ -29,12 +30,15 @@ function execute(interaction) {
                     Authorization: `bearer ${config_json_1.bearerToken}`,
                 },
             });
+            if (who == "Это Миша!") {
+                who = "Це Міша!!!";
+            }
             who = response.data;
         }
         catch (err) {
             console.log(err);
         }
-        yield interaction.reply(who);
+        yield interaction.editReply(who);
     });
 }
 exports.execute = execute;

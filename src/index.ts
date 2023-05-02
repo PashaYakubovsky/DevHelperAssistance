@@ -50,6 +50,14 @@ app.use("/api/v1", loggerRouter);
 app.use("/api/v1", usersRouter);
 app.use("/api/v1", chatRouter);
 app.use("/api/v1", authRouter);
+
+app.post("/change-3d-text", async (req, res) => {
+    const { message } = req.body;
+
+    io.emit("changeText", message ?? "test");
+
+    res.status(200).send("Message received");
+});
 // app.use("/api/v1/users", usersRouter);
 // app.post("/api/v1/getSitePreview", (req, res) => {
 //     try {
@@ -60,7 +68,6 @@ app.use("/api/v1", authRouter);
 //         console.log(err);
 //     }
 // });
-
 const bot = () => {
     const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -108,27 +115,23 @@ httpServer.listen(String(+port - 1000));
 // Web socket
 const io = new Server(httpsServer, {
     cors: {
-        origin: [
-            "http://localhost:4200",
-            "http://localhost:4201",
-            "http://localhost:3000",
-            "https://pashayakubovsky.netlify.app",
-            "https://cors-anywhere.herokuapp.com",
-            "http://localhost:24055",
-            "https://1680-157-90-210-118.ngrok-free.app/",
-            "https://*.ngrok-free.app/",
-            "1680-157-90-210-118.ngrok-free.app",
-            "https://1680-157-90-210-118.ngrok-free.app",
-        ],
-        methods: ["GET", "POST"],
+        origin: "*",
+        methods: ["GET", "POST", "PUT"],
     },
 });
 
-io.on("connection", socket => {
+io.on("connection", async socket => {
     console.log("User connected: " + socket.id);
+    // const doc = (await db.collection("Online").get()).docs[0];
+    // let counter = doc.data()?.count as number;
+    // await db.collection("Online").doc(doc.id).update({ count: counter });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
         console.log("user disconnected");
+    });
+
+    socket.on("closed", async () => {
+        console.log("socket closed");
     });
 
     socket.on("message", async args => {
@@ -173,16 +176,9 @@ io.on("connection", socket => {
     });
 
     socket.on("typing", (args: { typing: boolean; user: { userId: string; name: string } }) => {
+        console.log(args);
         io.emit("typing", args);
     });
 });
 
 io.listen(3000);
-
-app.post("/change-3d-text", async (req, res) => {
-    const { message } = req.body;
-
-    io.emit("changeText", message ?? "test");
-
-    res.status(200).send("Message received");
-});

@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.execute = exports.data = void 0;
+const https_1 = __importDefault(require("https"));
 const discord_js_1 = require("discord.js");
 const axios_1 = __importDefault(require("axios"));
 const config_json_1 = require("../config.json");
@@ -28,6 +29,9 @@ function execute(interaction) {
         const user = interaction.user.id;
         if (prompt) {
             try {
+                const agent = new https_1.default.Agent({
+                    rejectUnauthorized: false,
+                });
                 const response = yield axios_1.default.post(`${config_json_1.apiDomain}/api/v1/image`, {
                     Prompt: prompt,
                     User: user,
@@ -35,6 +39,7 @@ function execute(interaction) {
                     headers: {
                         Authorization: "Bearer " + config_json_1.bearerToken,
                     },
+                    httpsAgent: agent,
                 });
                 yield interaction.editReply((_b = (_a = response.data) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.Url);
             }
