@@ -17,11 +17,6 @@ export async function execute(interaction: any) {
                 Authorization: `bearer ${bearerToken}`,
             },
         });
-
-        if (who == "Это Миша!") {
-            who = "Це Міша!!!";
-        }
-
         who = response.data;
     } catch (err) {
         console.log(err);
