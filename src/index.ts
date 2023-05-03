@@ -100,20 +100,22 @@ const bot = () => {
 };
 
 // try {
+/*
 const options = {
     passphrase: sslPassword,
     pfx: fs.readFileSync(path.join(__dirname, "STAR_inboost_ai.pfx")),
 };
-const httpsServer = https.createServer(options, app);
-httpsServer.listen(port, bot);
+*/
+const httpServer = http.createServer(app);
+httpServer.listen(port, bot);
 console.log(`listening on port ${port}!`);
 // }  {}
 
-const httpServer = http.createServer(app);
-httpServer.listen(String(+port - 1000));
+// const httpServer = http.createServer(app);
+// httpServer.listen(String(+port - 1000));
 
 // Web socket
-const io = new Server(httpsServer, {
+const io = new Server(httpServer, {
     cors: {
         origin: "*",
         methods: ["GET", "POST", "PUT"],
