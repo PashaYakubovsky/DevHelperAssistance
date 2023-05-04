@@ -27,7 +27,7 @@ if (!String.prototype.trim) {
     String.prototype.trim = function () {
         return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
     };
-};;
+}
 
 const app = express();
 
@@ -106,16 +106,22 @@ const options = {
     pfx: fs.readFileSync(path.join(__dirname, "STAR_inboost_ai.pfx")),
 };
 */
-const httpServer = http.createServer(app);
-httpServer.listen(port, bot);
+
+const options = {
+    key: fs.readFileSync(path.resolve(__dirname, "agent2-key.key")),
+    cert: fs.readFileSync(path.resolve(__dirname, "agent2-cert.crt")),
+};
+
+const httpsServer = https.createServer(options, app);
+httpsServer.listen(port, bot);
 console.log(`listening on port ${port}!`);
 // }  {}
 
-// const httpServer = http.createServer(app);
-// httpServer.listen(String(+port - 1000));
+const httpServer = http.createServer(app);
+httpServer.listen(String(+port - 1000));
 
 // Web socket
-const io = new Server(httpServer, {
+const io = new Server(httpsServer, {
     cors: {
         origin: "*",
         methods: ["GET", "POST", "PUT"],
