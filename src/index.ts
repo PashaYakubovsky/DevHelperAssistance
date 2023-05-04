@@ -20,6 +20,7 @@ import "firebase/storage";
 import db from "./db/config";
 import authRouter from "./routes/auth";
 import { v4 as uuid } from "uuid";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 
 // import { Server } from "socket.io";
 
@@ -54,7 +55,7 @@ app.use("/api/v1", authRouter);
 app.post("/change-3d-text", async (req, res) => {
     const { message } = req.body;
 
-    io.emit("changeText", message ?? "test");
+    io?.emit("changeText", message ?? "test");
 
     res.status(200).send("Message received");
 });
@@ -68,6 +69,7 @@ app.post("/change-3d-text", async (req, res) => {
 //         console.log(err);
 //     }
 // });
+
 const bot = () => {
     const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -107,86 +109,102 @@ const options = {
 };
 */
 
-const options = {
-    key: fs.readFileSync(path.resolve(__dirname, "agent2-key.key")),
-    cert: fs.readFileSync(path.resolve(__dirname, "agent2-cert.crt")),
-};
-
-const httpsServer = https.createServer(options, app);
-httpsServer.listen(port, bot);
-console.log(`listening on port ${port}!`);
-// }  {}
-
-const httpServer = http.createServer(app);
-httpServer.listen(String(+port - 1000));
-
 // Web socket
-const io = new Server(httpsServer, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST", "PUT"],
-    },
-});
 
-io.on("connection", async socket => {
-    console.log("User connected: " + socket.id);
-    // const doc = (await db.collection("Online").get()).docs[0];
-    // let counter = doc.data()?.count as number;
-    // await db.collection("Online").doc(doc.id).update({ count: counter });
+try {
+    const options = {
+        key: fs.readFileSync(path.resolve(__dirname, "agent2-key.key")),
+        cert: fs.readFileSync(path.resolve(__dirname, "agent2-cert.crt")),
+    };
 
-    socket.on("disconnect", async () => {
-        console.log("user disconnected");
+    const httpsServer = https.createServer(options, app);
+    httpsServer.listen(port, bot);
+
+    console.log(`listening on port ${port}!`);
+} catch (err) {
+    console.log(err);
+}
+
+let io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> = null;
+
+try {
+    const httpPort = String(+port - 1000);
+    const httpServer = http.createServer(app);
+    httpServer.listen(httpPort);
+
+    io = new Server(httpServer, {
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST", "PUT"],
+        },
     });
 
-    socket.on("closed", async () => {
-        console.log("socket closed");
+    console.log(`http port ${httpPort}!`);
+
+    io.on("connection", async socket => {
+        console.log("User connected: " + socket.id);
+        // const doc = (await db.collection("Online").get()).docs[0];
+        // let counter = doc.data()?.count as number;
+        // await db.collection("Online").doc(doc.id).update({ count: counter });
+
+        socket.on("disconnect", async () => {
+            console.log("user disconnected");
+        });
+
+        socket.on("closed", async () => {
+            console.log("socket closed");
+        });
+
+        socket.on("message", async args => {
+            const message = args?.message;
+            if (message) {
+                io.emit("message", message);
+
+                await db.collection("Messages").add(message);
+            }
+        });
+
+        socket.on("image", args => {
+            const imageData = args as {
+                name?: string;
+                type?: string;
+                data?: File;
+                user?: any;
+            };
+
+            io.emit("image", imageData);
+
+            // const buffer = imageData?.data ?? "";
+            // const blob = new Blob([buffer], { type: imageData.type });
+
+            // const storage = firebase.getApp();
+            // const storageRef = ref(storage, imageData?.name);
+
+            // uploadBytes(storageRef, imageData?.data)?.then(snapshot => {
+            //     console.log("Uploaded a blob or file!");
+            // });
+
+            const newMessage = {
+                dateCreate: new Date().toISOString(),
+                messageId: uuid(),
+                message: "image",
+                status: 2,
+                user: imageData?.user,
+                isFromBlob: true,
+            };
+
+            db.collection("Messages").add(newMessage);
+        });
+
+        socket.on("typing", (args: { typing: boolean; user: { userId: string; name: string } }) => {
+            console.log(args);
+            io.emit("typing", args);
+        });
     });
 
-    socket.on("message", async args => {
-        const message = args?.message;
-        if (message) {
-            io.emit("message", message);
+    io.listen(3000);
+} catch (err) {
+    console.log(err);
+}
 
-            await db.collection("Messages").add(message);
-        }
-    });
-
-    socket.on("image", args => {
-        const imageData = args as {
-            name?: string;
-            type?: string;
-            data?: File;
-            user?: any;
-        };
-
-        io.emit("image", imageData);
-
-        // const buffer = imageData?.data ?? "";
-        // const blob = new Blob([buffer], { type: imageData.type });
-
-        // const storage = firebase.getApp();
-        // const storageRef = ref(storage, imageData?.name);
-
-        // uploadBytes(storageRef, imageData?.data)?.then(snapshot => {
-        //     console.log("Uploaded a blob or file!");
-        // });
-
-        const newMessage = {
-            dateCreate: new Date().toISOString(),
-            messageId: uuid(),
-            message: "image",
-            status: 2,
-            user: imageData?.user,
-            isFromBlob: true,
-        };
-
-        db.collection("Messages").add(newMessage);
-    });
-
-    socket.on("typing", (args: { typing: boolean; user: { userId: string; name: string } }) => {
-        console.log(args);
-        io.emit("typing", args);
-    });
-});
-
-io.listen(3000);
+// }  {}
