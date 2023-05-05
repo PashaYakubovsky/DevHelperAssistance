@@ -3,7 +3,7 @@ import http from "http";
 import { Interaction, Client, Events, GatewayIntentBits } from "discord.js";
 import fs from "node:fs";
 import path from "node:path";
-import { token, port, sslPassword } from "./config.json";
+import { token, port } from "./config.json";
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -15,7 +15,7 @@ import usersRouter from "./routes/users";
 import chatRouter from "./routes/chat";
 import { Server } from "socket.io";
 // import axios from "axios";
-import firebase from "firebase/app";
+// import firebase from "firebase/app";
 import "firebase/storage";
 import db from "./db/config";
 import authRouter from "./routes/auth";
@@ -108,6 +108,7 @@ const options = {
     pfx: fs.readFileSync(path.join(__dirname, "STAR_inboost_ai.pfx")),
 };
 */
+let io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> = null;
 
 // Web socket
 
@@ -121,25 +122,13 @@ try {
     httpsServer.listen(port, bot);
 
     console.log(`listening on port ${port}!`);
-} catch (err) {
-    console.log(err);
-}
 
-let io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> = null;
-
-try {
-    const httpPort = String(+port - 1000);
-    const httpServer = http.createServer(app);
-    httpServer.listen(httpPort);
-
-    io = new Server(httpServer, {
+    io = new Server(httpsServer, {
         cors: {
             origin: "*",
             methods: ["GET", "POST", "PUT"],
         },
     });
-
-    console.log(`http port ${httpPort}!`);
 
     io.on("connection", async socket => {
         console.log("User connected: " + socket.id);
@@ -203,6 +192,14 @@ try {
     });
 
     io.listen(3000);
+} catch (err) {
+    console.log(err);
+}
+
+try {
+    const httpPort = String(+port - 1000);
+    const httpServer = http.createServer(app);
+    httpServer.listen(httpPort);
 } catch (err) {
     console.log(err);
 }
