@@ -119,14 +119,13 @@ try {
     };
 
     const httpsServer = https.createServer(options, app);
-    httpsServer.listen(port, bot);
+    // httpsServer.listen(port, bot);
 
     console.log(`listening on port ${port}!`);
 
     io = new Server(httpsServer, {
         cors: {
             origin: "*",
-            methods: ["GET", "POST", "PUT"],
         },
     });
 
