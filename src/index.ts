@@ -103,23 +103,23 @@ const bot = () => {
 };
 
 // try {
+/*
 
 const options = {
     passphrase: config.sslPassword,
     pfx: fs.readFileSync(path.join(__dirname, "cert.pfx")),
 };
+    */
 
 let io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> = null;
 
 // Web socket
 
 try {
-    /*
     const options = {
-        key: fs.readFileSync(path.resolve(__dirname, "agent2-key.key")),
-        cert: fs.readFileSync(path.resolve(__dirname, "agent2-cert.crt")),
+        key: fs.readFileSync(path.resolve(__dirname, "privkey.pem")),
+        cert: fs.readFileSync(path.resolve(__dirname, "fullchain.pem")),
     };
-    */
 
     const httpsServer = https.createServer(options, app);
     console.log(`listening on port ${port}!`);
