@@ -117,8 +117,12 @@ let io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> = null
 
 try {
     const options = {
-        key: fs.readFileSync(path.resolve(__dirname, "privkey.pem")),
-        cert: fs.readFileSync(path.resolve(__dirname, "fullchain.pem")),
+        key: fs.readFileSync(
+            path.resolve("/etc/letsencrypt/live/pashaykubovsky.tech/", "fullchain.pem")
+        ),
+        cert: fs.readFileSync(
+            path.resolve("/etc/letsencrypt/live/pashaykubovsky.tech/", "privkey.pem")
+        ),
     };
 
     const httpsServer = https.createServer(options, app);
