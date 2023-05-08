@@ -21,6 +21,7 @@ import db from "./db/config";
 import authRouter from "./routes/auth";
 import { v4 as uuid } from "uuid";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import config from "./config.json";
 
 // import { Server } from "socket.io";
 
@@ -102,25 +103,25 @@ const bot = () => {
 };
 
 // try {
-/*
+
 const options = {
-    passphrase: sslPassword,
-    pfx: fs.readFileSync(path.join(__dirname, "STAR_inboost_ai.pfx")),
+    passphrase: config.sslPassword,
+    pfx: fs.readFileSync(path.join(__dirname, "cert.pfx")),
 };
-*/
+
 let io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> = null;
 
 // Web socket
 
 try {
+    /*
     const options = {
         key: fs.readFileSync(path.resolve(__dirname, "agent2-key.key")),
         cert: fs.readFileSync(path.resolve(__dirname, "agent2-cert.crt")),
     };
+    */
 
     const httpsServer = https.createServer(options, app);
-    // httpsServer.listen(port, bot);
-
     console.log(`listening on port ${port}!`);
 
     io = new Server(httpsServer, {
@@ -190,6 +191,7 @@ try {
         });
     });
 
+    httpsServer.listen(port);
     io.listen(3000);
 } catch (err) {
     console.log(err);
