@@ -122,7 +122,10 @@ try {
     };
 
     const httpsServer = https.createServer(options, app);
+
     console.log(`listening on port ${port}!`);
+
+    httpsServer.listen(port);
 
     io = new Server(httpsServer, {
         cors: {
@@ -191,7 +194,6 @@ try {
         });
     });
 
-    httpsServer.listen(port);
     io.listen(3000);
 } catch (err) {
     console.log(err);
