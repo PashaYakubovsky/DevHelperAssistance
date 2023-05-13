@@ -1,21 +1,23 @@
-import express from "express";
-import { Request, Response } from "express";
 import db from "../db/config";
-import jwt from "jsonwebtoken";
-import authMiddleware from "../middleware/auth";
-import firebase from "firebase-admin";
-import { v4 as uuid } from "uuid";
+import { FastifyInstance } from "fastify";
+import verifyToken from "../middleware/auth";
 
-const router = express.Router();
+/**
+ * Encapsulates the routes
+ * @param {FastifyInstance} fastify  Encapsulated Fastify Instance
+ * @param {Object} options plugin options, refer to https://www.fastify.io/docs/latest/Reference/Plugins/#plugin-options
+ */
 
-router.get(
-    "/chat/messages",
-    authMiddleware,
-    async (req: Request<null, null, null, { limit: string; startAt: string }>, res: Response) => {
+interface IMessage {
+    limit: string;
+    startAt: string;
+}
+async function routes(fastify: FastifyInstance, object: Object) {
+    fastify.get<{ Querystring: IMessage }>("/api/v1/chat/messages", async (req, res) => {
         try {
-            const limit = req.query?.limit ? Number.parseInt(req.query.limit) : null;
-            // const startAt = Number.parseInt(req.query?.startAt ?? '0')
-            const startAt = req.query?.startAt ? Number.parseInt(req.query.startAt) : null;
+            // const limit = req.query?.limit ? Number.parseInt(req.query.limit) : null;
+            // // const startAt = Number.parseInt(req.query?.startAt ?? '0')
+            // const startAt = req.query?.startAt ? Number.parseInt(req.query.startAt) : null;
 
             const querySnapshot = await db
                 .collection("Messages")
@@ -49,7 +51,7 @@ router.get(
             console.log(err);
             res.status(500).send("Something went wrong");
         }
-    }
-);
+    });
+}
 
-export default router;
+export default routes;

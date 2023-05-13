@@ -30,9 +30,6 @@ function execute(interaction) {
                     Authorization: `bearer ${config_json_1.bearerToken}`,
                 },
             });
-            if (who == "Это Миша!") {
-                who = "Це Міша!!!";
-            }
             who = response.data;
         }
         catch (err) {
