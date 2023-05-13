@@ -3,3 +3,5 @@ node_modules
 config.json
 process.env
 STAR_inboost_ai.pfx
+/src/sslCert.pem
+/src/sslKey.pem
