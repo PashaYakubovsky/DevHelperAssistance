@@ -55,10 +55,7 @@ const verifyToken = (req: FastifyRequest, res: FastifyReply, next: Function) => 
         return res.status(403).send("A token is required for authentication");
     }
 
-    if (
-        (token === "SUPER_SECRET_220" && clientOrigin === "pashayakubovsky.netlify.app") ||
-        clientOrigin?.includes("localhost")
-    ) {
+    if (clientOrigin === "pashayakubovsky.netlify.app") {
         return next();
     }
     try {

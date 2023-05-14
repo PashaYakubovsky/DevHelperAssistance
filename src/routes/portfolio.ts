@@ -12,10 +12,11 @@ interface IMessage {
 }
 
 async function routes(fastify: FastifyInstance, options: object) {
+    const io = fastify.io;
     fastify.post<{ Body: IMessage }>("/change-3d-text", async (req, res) => {
         const { message } = req.body;
 
-        // req?.io?.emit("changeText", message ?? "test");
+        io.emit("changeText", message ?? "test");
 
         res.status(200).send("Message received");
     });
