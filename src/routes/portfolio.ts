@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
-import db from "../db/config";
+// import db from "../db/config";
+// import fastify from "fastify";
 
 /**
  * Encapsulates the routes
@@ -12,9 +13,10 @@ interface IMessage {
 }
 
 async function routes(fastify: FastifyInstance, options: object) {
-    const io = fastify.io;
+    // const server = fastify();
     fastify.post<{ Body: IMessage }>("/change-3d-text", async (req, res) => {
         const { message } = req.body;
+        const io = req.server.io;
 
         io.emit("changeText", message ?? "test");
 

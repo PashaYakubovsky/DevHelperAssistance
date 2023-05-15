@@ -4,7 +4,7 @@ import chatRouter from "./routes/chat";
 // import helmet from "@fastify/helmet";
 import authRouter from "./routes/auth";
 import portfolioRouter from "./routes/portfolio";
-import fastify, { FastifyInstance } from "fastify";
+import { FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import https from "https";
 import http from "http";
@@ -12,9 +12,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { port, wsPort } from "./config.json";
 import "firebase/storage";
+// import fastifySocketIO from "fastify-socket.io-plugin";
+
 import fastifyIO from "fastify-socket.io";
 import db from "./db/config";
 import { v4 as uuid } from "uuid";
+// import wsPlugin from "fastify-websocket";
 
 require("dotenv").config();
 import { plugin as socketPlugin } from "./plugins/socket-plugin";
@@ -43,8 +46,10 @@ const serverFactoryHttp = (handler, opts) => {
     return httpServer;
 };
 
-const serverHttps = fastify({ logger: true, serverFactory: serverFactoryHttps });
-const serverHttp = fastify({ logger: true, serverFactory: serverFactoryHttp });
+import Fastify from "fastify";
+
+const serverHttps = Fastify({ logger: true, serverFactory: serverFactoryHttps });
+const serverHttp = Fastify({ logger: true, serverFactory: serverFactoryHttp });
 
 // Run the server!
 const start = async (server: FastifyInstance, port: number) => {
@@ -55,63 +60,70 @@ const start = async (server: FastifyInstance, port: number) => {
         //     { contentSecurityPolicy: false }
         // );
 
-        await server.register(cors, {
+        server.register(cors, {
             origin: "*",
         });
 
         // settings the routes for api
-        await server.register(loggerRouter);
-        await server.register(usersRouter);
-        await server.register(chatRouter);
-        await server.register(authRouter);
-        await server.register(portfolioRouter);
-        // await server.register(fastifyIO);
-        await server.ready();
-        await server.register(socketPlugin);
+        server.register(loggerRouter);
+        server.register(usersRouter);
+        server.register(chatRouter);
+        server.register(authRouter);
+        server.register(portfolioRouter);
+        // server.register(wsPlugin);
+        // server.register(socketPlugin);
+        await server.register(fastifyIO, {
+            cors: { origin: "*" },
+            transports: ["websocket"],
+        });
 
-        // .then(() => {
-        // we need to wait for the server to be ready, else `server.io` is undefined
-        // server.io.on("connection", socket => {
-        //     console.log("User connected: " + socket.id);
-        //     socket.on("disconnect", async () => {
-        //         console.log("user disconnected");
-        //     });
-        //     socket.on("closed", async () => {
-        //         console.log("socket closed");
-        //     });
-        //     socket.on("message", async args => {
-        //         const message = args?.message;
-        //         if (message) {
-        //             socket.emit("message", message);
-        //             await db.collection("Messages").add(message);
-        //         }
-        //     });
-        //     socket.on(
-        //         "image",
-        //         (args: { name?: string; type?: string; data?: File; user?: any }) => {
-        //             const imageData = args;
-        //             socket.emit("image", imageData);
-        //             const newMessage = {
-        //                 dateCreate: new Date().toISOString(),
-        //                 messageId: uuid(),
-        //                 message: "image",
-        //                 status: 2,
-        //                 user: imageData?.user,
-        //                 isFromBlob: true,
-        //             };
-        //             db.collection("Messages").add(newMessage);
-        //         }
-        //     );
-        //     socket.on(
-        //         "typing",
-        //         (args: { typing: boolean; user: { userId: string; name: string } }) => {
-        //             console.log(args);
-        //             socket.emit("typing", args);
-        //         }
-        //     );
-        // });
-        // });
+        server.io.on("connection", socket => {
+            console.log("User connected: " + socket.id);
+            socket.on("disconnect", async () => {
+                console.log("user disconnected");
+            });
+            socket.on("closed", async () => {
+                console.log("socket closed");
+            });
+            socket.on("message", async args => {
+                const message = args?.message;
+                if (message) {
+                    socket.emit("message", message);
+                    await db.collection("Messages").add(message);
+                }
+            });
+            socket.on(
+                "image",
+                (args: { name?: string; type?: string; data?: File; user?: any }) => {
+                    const imageData = args;
+                    socket.emit("image", imageData);
+                    const newMessage = {
+                        dateCreate: new Date().toISOString(),
+                        messageId: uuid(),
+                        message: "image",
+                        status: 2,
+                        user: imageData?.user,
+                        isFromBlob: true,
+                    };
+                    db.collection("Messages").add(newMessage);
+                }
+            );
+            socket.on(
+                "typing",
+                (args: { typing: boolean; user: { userId: string; name: string } }) => {
+                    console.log(args);
+                    socket.emit("typing", args);
+                }
+            );
+        });
 
+        server.listen({ port }, (err, address) => {
+            if (err) {
+                console.error(err);
+                process.exit(1);
+            }
+            console.log(`Server listening at: ${address}`);
+        });
         // // we need to wait for the server to be ready, else `fastify.io` is undefined
         // async function socketRoutes(fastify: FastifyInstance, opts: Object, done: Function) {
         //     await fastify.ready();
@@ -136,14 +148,6 @@ const start = async (server: FastifyInstance, port: number) => {
         //     });
         // });
 
-        server.listen({ port }, (err, address) => {
-            if (err) {
-                console.error(err);
-                process.exit(1);
-            }
-            console.log(`Server listening at: ${address}`);
-        });
-
         // server.register(require("fastify-socket.io"), {
         //     // put your options here
         //     logLevel: "debug",
@@ -156,7 +160,7 @@ const start = async (server: FastifyInstance, port: number) => {
 
 Promise.all([start(serverHttp, wsPort), start(serverHttps, port)])
     .then(() => {
-        console.log("All servers listening: [  ]");
+        console.log("All servers listening:");
     })
     .catch(err => {
         console.error(err);
