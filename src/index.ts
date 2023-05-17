@@ -13,7 +13,7 @@ import * as commandModules from "./commands";
 import loggerRouter from "./routes/logger";
 import usersRouter from "./routes/users";
 import chatRouter from "./routes/chat";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 // import axios from "axios";
 // import firebase from "firebase/app";
 import "firebase/storage";
@@ -121,11 +121,16 @@ try {
         cert: fs.readFileSync(path.resolve(__dirname, "sslCert.pem")),
     };
 
+    app.use((req, res, next) => {
+        (req as any).io = io;
+        next();
+    });
+
     const httpsServer = https.createServer(options, app);
 
     console.log(`listening on port ${port}!`);
 
-    httpsServer.listen(port);
+    httpsServer.listen(port, bot);
 
     io = new Server(httpsServer, {
         cors: {
@@ -164,7 +169,7 @@ try {
                 user?: any;
             };
 
-            io.emit("image", imageData);
+            socket.emit("image", imageData);
 
             // const buffer = imageData?.data ?? "";
             // const blob = new Blob([buffer], { type: imageData.type });
