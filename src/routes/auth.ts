@@ -53,7 +53,7 @@ async function routes(fastify: FastifyInstance, options) {
                             expiresIn: "24h",
                         });
 
-                        return res.send(token);
+                        return res.send({ token, user });
                     }
                 }
             } catch (err) {

@@ -22,15 +22,22 @@ import { v4 as uuid } from "uuid";
 require("dotenv").config();
 import { plugin as socketPlugin } from "./plugins/socket-plugin";
 
+const sslKeyPath = path.resolve(__dirname, "sslKey.pem");
+const sslCertPath = path.resolve(__dirname, "sslCert.pem");
+
+const options = {
+    key: fs.readFileSync(sslKeyPath),
+    cert: fs.readFileSync(sslCertPath),
+};
+
 const serverFactoryHttps = (handler, opts) => {
-    const sslKeyPath = path.resolve(__dirname, "sslKey.pem");
-    const sslCertPath = path.resolve(__dirname, "sslCert.pem");
+    /*
+     const httpServer = http.createServer((req, res) => {
+         handler(req, res);
+    });
+    */
 
-    const options = {
-        key: fs.readFileSync(sslKeyPath),
-        cert: fs.readFileSync(sslCertPath),
-    };
-
+    // return httpServer;
     const httpsServer = https.createServer(options, (req, res) => {
         handler(req, res);
     });
@@ -39,11 +46,16 @@ const serverFactoryHttps = (handler, opts) => {
 };
 
 const serverFactoryHttp = (handler, opts) => {
+    /*
     const httpServer = http.createServer((req, res) => {
         handler(req, res);
     });
-
     return httpServer;
+    */
+    const httpsServer = https.createServer(options, (req, res) => {
+        handler(req, res);
+    });
+    return httpsServer;
 };
 
 import Fastify from "fastify";
@@ -79,6 +91,7 @@ const start = async (server: FastifyInstance, port: number) => {
 
         server.io.on("connection", socket => {
             console.log("User connected: " + socket.id);
+
             socket.on("disconnect", async () => {
                 console.log("user disconnected");
             });

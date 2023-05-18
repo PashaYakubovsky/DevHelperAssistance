@@ -46,10 +46,11 @@ const verifyToken = (req: FastifyRequest, res: FastifyReply, next: Function) => 
     const query = req.query as IToken;
 
     const token =
-        body.token ||
-        query.token ||
+        body?.token ||
+        query?.token ||
         (req.headers["x-access-token"] as string) ||
-        req.headers?.authorization?.split(" ")[1];
+        req.headers?.authorization?.split(" ")[1] ||
+        req?.headers?.Authorization[1];
 
     if (!token) {
         return res.status(403).send("A token is required for authentication");
