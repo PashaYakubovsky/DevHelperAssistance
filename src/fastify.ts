@@ -17,6 +17,22 @@ import db from "./db/config";
 import { v4 as uuid } from "uuid";
 require("dotenv").config();
 
+// const serverFactory = (handler, opts) => {
+//     /*
+//      const httpServer = http.createServer((req, res) => {
+//          handler(req, res);
+//     });
+//     */
+
+//     const httpsServer = https.createServer(options, (req, res) => {
+//         handler(req, res);
+//     });
+
+//     console.log(httpsServer);
+
+//     return httpsServer;
+// };
+
 const sslKeyPath = path.resolve(__dirname, "sslKey.pem");
 const sslCertPath = path.resolve(__dirname, "sslCert.pem");
 
@@ -25,46 +41,12 @@ const options = {
     cert: fs.readFileSync(sslCertPath),
 };
 
-const serverFactory = (handler, opts) => {
-    /*
-     const httpServer = http.createServer((req, res) => {
-         handler(req, res);
-    });
-    */
-
-    // return httpServer;
-    const httpsServer = https.createServer(options, (req, res) => {
-        handler(req, res);
-    });
-
-    return httpsServer;
-};
-
-const serverFactory2 = (handler, opts) => {
-    /*
-    const httpServer = http.createServer((req, res) => {
-        handler(req, res);
-    });
-    return httpServer;
-    */
-    const httpsServer = https.createServer(options, (req, res) => {
-        handler(req, res);
-    });
-    return httpsServer;
-};
-
-const server = Fastify({ logger: true, serverFactory: serverFactory });
-const server2 = Fastify({ logger: true, serverFactory: serverFactory2 });
+const server = Fastify({ logger: true, https: options });
+// const server2 = Fastify({ logger: true, serverFactory: serverFactory2 });
 
 // Run the server!
 const start = async (server: FastifyInstance, port: number) => {
     try {
-        // await server.register(
-        //     helmet,
-        //     // Example disables the `contentSecurityPolicy` middleware but keeps the rest.
-        //     { contentSecurityPolicy: false }
-        // );
-
         server.register(cors, {
             origin: "*",
         });
@@ -75,8 +57,7 @@ const start = async (server: FastifyInstance, port: number) => {
         server.register(chatRouter);
         server.register(authRouter);
         server.register(portfolioRouter);
-        // server.register(wsPlugin);
-        // server.register(socketPlugin);
+
         await server.register(fastifyIO, {
             cors: { origin: "*" },
             transports: ["websocket"],
@@ -130,41 +111,13 @@ const start = async (server: FastifyInstance, port: number) => {
             }
             console.log(`Server listening at: ${address}`);
         });
-        // // we need to wait for the server to be ready, else `fastify.io` is undefined
-        // async function socketRoutes(fastify: FastifyInstance, opts: Object, done: Function) {
-        //     await fastify.ready();
-
-        //     // register Socket.io with Fastify
-        //     fastify.decorate("io", fastifyIO);
-        //     fastify.register((fastify, opts, next) => {
-        //         next();
-        //     });
-
-        //     done();
-        // }
-        // await server.register(fastifyIO);
-
-        // server.register(require("fastify-static"), {
-        //     root: path.join(__dirname, "public"),
-        // });
-
-        // await server.ready().then(() => {
-        //     socketRoutes(server as FastifyInstance, {
-        //         cors: { origin: "*" },
-        //     });
-        // });
-
-        // server.register(require("fastify-socket.io"), {
-        //     // put your options here
-        //     logLevel: "debug",
-        // });
     } catch (err) {
         server.log.error(err);
         process.exit(1);
     }
 };
-
-Promise.all([start(server2, wsPort), start(server, port)])
+// start(server2, wsPort),
+Promise.all([start(server, port)])
     .then(() => {
         console.log("All servers listening:");
     })
