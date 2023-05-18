@@ -42,7 +42,7 @@ const options = {
 };
 
 const server = Fastify({ logger: true, https: options });
-// const server2 = Fastify({ logger: true, serverFactory: serverFactory2 });
+const server2 = Fastify({ logger: true, https: options });
 
 // Run the server!
 const start = async (server: FastifyInstance, port: number) => {
@@ -116,8 +116,8 @@ const start = async (server: FastifyInstance, port: number) => {
         process.exit(1);
     }
 };
-// start(server2, wsPort),
-Promise.all([start(server, port)])
+
+Promise.all([start(server2, wsPort), start(server, port)])
     .then(() => {
         console.log("All servers listening:");
     })
