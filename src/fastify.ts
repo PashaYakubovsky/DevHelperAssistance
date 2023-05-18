@@ -1,7 +1,6 @@
 import loggerRouter from "./routes/logger";
 import usersRouter from "./routes/users";
 import chatRouter from "./routes/chat";
-// import helmet from "@fastify/helmet";
 import authRouter from "./routes/auth";
 import portfolioRouter from "./routes/portfolio";
 import { FastifyInstance } from "fastify";
@@ -12,15 +11,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { port, wsPort } from "./config.json";
 import "firebase/storage";
-// import fastifySocketIO from "fastify-socket.io-plugin";
-
+import Fastify from "fastify";
 import fastifyIO from "fastify-socket.io";
 import db from "./db/config";
 import { v4 as uuid } from "uuid";
-// import wsPlugin from "fastify-websocket";
-
 require("dotenv").config();
-import { plugin as socketPlugin } from "./plugins/socket-plugin";
 
 const sslKeyPath = path.resolve(__dirname, "sslKey.pem");
 const sslCertPath = path.resolve(__dirname, "sslCert.pem");
@@ -30,7 +25,7 @@ const options = {
     cert: fs.readFileSync(sslCertPath),
 };
 
-const serverFactoryHttps = (handler, opts) => {
+const serverFactory = (handler, opts) => {
     /*
      const httpServer = http.createServer((req, res) => {
          handler(req, res);
@@ -45,7 +40,7 @@ const serverFactoryHttps = (handler, opts) => {
     return httpsServer;
 };
 
-const serverFactoryHttp = (handler, opts) => {
+const serverFactory2 = (handler, opts) => {
     /*
     const httpServer = http.createServer((req, res) => {
         handler(req, res);
@@ -58,10 +53,8 @@ const serverFactoryHttp = (handler, opts) => {
     return httpsServer;
 };
 
-import Fastify from "fastify";
-
-const serverHttps = Fastify({ logger: true, serverFactory: serverFactoryHttps });
-const serverHttp = Fastify({ logger: true, serverFactory: serverFactoryHttp });
+const server = Fastify({ logger: true, serverFactory: serverFactory });
+const server2 = Fastify({ logger: true, serverFactory: serverFactory2 });
 
 // Run the server!
 const start = async (server: FastifyInstance, port: number) => {
@@ -171,7 +164,7 @@ const start = async (server: FastifyInstance, port: number) => {
     }
 };
 
-Promise.all([start(serverHttp, wsPort), start(serverHttps, port)])
+Promise.all([start(server2, wsPort), start(server, port)])
     .then(() => {
         console.log("All servers listening:");
     })
