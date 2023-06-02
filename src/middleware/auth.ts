@@ -17,7 +17,7 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
     }
     if (
         (token === "SUPER_SECRET_220" && clientOrigin === "https://pashayakubovsky.netlify.app") ||
-        clientOrigin.includes("http://localhost")
+        clientOrigin?.includes("http://localhost")
     ) {
         return next();
     }

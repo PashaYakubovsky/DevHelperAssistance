@@ -1,10 +1,7 @@
 import express from "express";
 import { Request, Response } from "express";
 import db from "../db/config";
-import jwt from "jsonwebtoken";
 import authMiddleware from "../middleware/auth";
-import firebase from "firebase-admin";
-import { v4 as uuid } from "uuid";
 
 const router = express.Router();
 

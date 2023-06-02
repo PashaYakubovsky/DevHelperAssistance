@@ -13,15 +13,13 @@ import * as commandModules from "./commands";
 import loggerRouter from "./routes/logger";
 import usersRouter from "./routes/users";
 import chatRouter from "./routes/chat";
-import { Server, Socket } from "socket.io";
-// import axios from "axios";
-// import firebase from "firebase/app";
+import { Server } from "socket.io";
 import "firebase/storage";
 import db from "./db/config";
 import authRouter from "./routes/auth";
 import { v4 as uuid } from "uuid";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import config from "./config.json";
+import portfolioRouter from "./routes/portfolio";
 
 // import { Server } from "socket.io";
 
@@ -52,14 +50,15 @@ app.use("/api/v1", loggerRouter);
 app.use("/api/v1", usersRouter);
 app.use("/api/v1", chatRouter);
 app.use("/api/v1", authRouter);
+app.use("/api/v1", portfolioRouter);
 
-app.post("/change-3d-text", async (req, res) => {
-    const { message } = req.body;
+// app.post("/change-3d-text", async (req, res) => {
+//     const { message } = req.body;
 
-    io?.emit("changeText", message ?? "test");
+//     io?.emit("changeText", message ?? "test");
 
-    res.status(200).send("Message received");
-});
+//     res.status(200).send("Message received");
+// });
 // app.use("/api/v1/users", usersRouter);
 // app.post("/api/v1/getSitePreview", (req, res) => {
 //     try {
@@ -111,7 +110,7 @@ const options = {
 };
     */
 
-let io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> = null;
+export let io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> = null;
 
 // Web socket
 
@@ -128,7 +127,7 @@ try {
 
     const httpsServer = https.createServer(options, app);
 
-    console.log(`listening on port ${port}!`);
+    console.log(`listening on port ${port} https!`);
 
     httpsServer.listen(port, bot);
 
@@ -208,6 +207,7 @@ try {
     const httpPort = String(+port - 1000);
     const httpServer = http.createServer(app);
     httpServer.listen(httpPort);
+    console.log(`listening on port ${httpPort} http!`);
 } catch (err) {
     console.log(err);
 }
