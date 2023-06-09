@@ -21,7 +21,7 @@ router.post("/logger", async (req: Request, res: Response) => {
             .setTitle(body?.message ?? "_")
             .setFields(chunks);
         const origin = req.get("origin");
-        const isDev = origin.includes("localhost");
+        const isDev = origin?.includes("localhost");
 
         await axios.post(
             `https://discord.com/api/webhooks/${
